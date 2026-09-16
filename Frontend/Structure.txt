@@ -1,0 +1,11 @@
+loan_frontend/
+├── app.py
+├── 	/
+│   ├── base.html        (shared nav + footer)
+│   ├── index.html        Home — hero + 4 stat cards
+│   ├── form.html          Loan Default Prediction Form
+│   ├── result.html        Assessment result
+│   ├── model-info.html    Algorithm, hyperparameters, performance, feature importance
+│   ├── data-insights.html EDA summary
+│   └── disclaimer.html
+└── static/css/style.css

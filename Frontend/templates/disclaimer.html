@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Disclaimer — LoanML{% endblock %}
+{% block content %}
+
+<div class="subnav">
+  <a class="back-link" href="{{ url_for('home') }}">&larr; Back to Home</a>
+</div>
+
+<div class="page">
+  <div class="page-head">
+    <h1>Disclaimer</h1>
+    <p>Please read before using the assessment tool</p>
+  </div>
+
+  <div class="card">
+    <p class="prose">
+      LoanML is a coursework project built for the Common Project Model
+      (Phase 1) under the Computer Engineering Department's ML Project SOP.
+      It estimates the probability that a loan applicant will default, based
+      on a logistic regression model trained on a historical, publicly
+      available dataset of 255,347 loan records.
+    </p>
+    <p class="prose">
+      <strong>This is not a lending decision.</strong> The model was built for
+      learning and research purposes. It has not been validated for
+      regulatory, compliance, or production lending use, and its accuracy
+      (88.5%) reflects performance on historical test data, not a guarantee
+      for any individual application.
+    </p>
+    <p class="prose">
+      No personal data submitted through this form is stored, logged, or
+      shared. Figures entered here are used only to compute the estimate
+      displayed on the result page.
+    </p>
+    <p class="prose" style="margin-bottom:0;">
+      For an actual credit decision, consult a licensed loan officer or
+      financial institution.
+    </p>
+  </div>
+</div>
+
+{% endblock %}

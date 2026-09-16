@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Assessment Result — LoanML{% endblock %}
+{% block content %}
+
+<div class="subnav">
+  <a class="back-link" href="{{ url_for('assessment_form') }}">&larr; New Assessment</a>
+  <span class="pill">Logistic Regression</span>
+</div>
+
+<div class="page">
+  <div class="page-head">
+    <h1>Assessment Result</h1>
+    <p>Based on the figures submitted for this applicant</p>
+  </div>
+
+  <div class="card">
+    <div class="verdict">
+      <span class="tag {{ 'high' if risk_label == 'Likely to default' else 'low' }}">{{ risk_label }}</span>
+      <div>
+        <div class="prob">{{ probability }}%</div>
+        <div class="prob-label">estimated probability of default</div>
+      </div>
+    </div>
+
+    <ul class="factor-list">
+      {% for factor in factors %}
+      <li><span>{{ factor.label }}</span><span class="val">{{ factor.value }}</span></li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="disclaimer-box">
+    This is a statistical estimate for coursework and research use, not a lending decision.
+    See the <a href="{{ url_for('disclaimer') }}" style="text-decoration: underline;">full disclaimer</a>.
+  </div>
+
+  <a class="back-link" href="{{ url_for('assessment_form') }}">&larr; Run another assessment</a>
+</div>
+
+{% endblock %}

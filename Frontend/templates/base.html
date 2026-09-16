@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}LoanML{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="{{ url_for('home') }}">
+        <span class="mark">L</span> LoanML
+      </a>
+      <nav class="topnav">
+        <a href="{{ url_for('data_insights') }}" class="{{ 'active' if active == 'insights' }}">Data Insights</a>
+        <a href="{{ url_for('model_info') }}" class="{{ 'active' if active == 'model' }}">Model Info</a>
+        <a href="{{ url_for('disclaimer') }}" class="{{ 'active' if active == 'disclaimer' }}">Disclaimer</a>
+        <a class="btn-cta" href="{{ url_for('assessment_form') }}">Predict Now</a>
+      </nav>
+    </div>
+  </div>
+
+  {% block content %}{% endblock %}
+
+  <footer class="site-footer">
+    Built for the ML Project SOP, Common Project Model — Loan Default Prediction (Banking).
+    Estimates are produced by a statistical model trained on historical loan records
+    and are for coursework and research use, not a lending decision.
+  </footer>
+
+</body>
+</html>
