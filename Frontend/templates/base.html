@@ -1,34 +1,91 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{% block title %}LoanML{% endblock %}</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}LoanML{% endblock %}</title>
+  <meta name="description"
+    content="LoanML — Loan default risk assessment powered by logistic regression. Coursework project.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script>
+    // Apply saved theme before paint to avoid flash
+    (function () {
+      try {
+        var t = localStorage.getItem('loanml-theme');
+        if (!t) {
+          t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) { }
+    })();
+  </script>
 </head>
+
 <body>
 
-  <div class="topbar">
+  <header class="topbar">
     <div class="topbar-inner">
       <a class="brand" href="{{ url_for('home') }}">
         <span class="mark">L</span> LoanML
       </a>
       <nav class="topnav">
-        <a href="{{ url_for('data_insights') }}" class="{{ 'active' if active == 'insights' }}">Data Insights</a>
-        <a href="{{ url_for('model_info') }}" class="{{ 'active' if active == 'model' }}">Model Info</a>
-        <a href="{{ url_for('disclaimer') }}" class="{{ 'active' if active == 'disclaimer' }}">Disclaimer</a>
+        <a href="{{ url_for('data_insights') }}" class="nav-link {{ 'active' if active == 'insights' }}">Data
+          Insights</a>
+        <a href="{{ url_for('model_info') }}" class="nav-link {{ 'active' if active == 'model' }}">Model Info</a>
+        <a href="{{ url_for('disclaimer') }}" class="nav-link {{ 'active' if active == 'disclaimer' }}">Disclaimer</a>
+        <button class="theme-toggle" type="button" aria-label="Toggle theme" onclick="toggleTheme()">
+          <svg class="moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+          </svg>
+          <svg class="sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4" />
+            <path
+              d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+          </svg>
+        </button>
         <a class="btn-cta" href="{{ url_for('assessment_form') }}">Predict Now</a>
       </nav>
     </div>
-  </div>
+  </header>
 
-  {% block content %}{% endblock %}
+  <main>
+    {% block content %}{% endblock %}
+  </main>
 
   <footer class="site-footer">
-    Built for the ML Project SOP, Common Project Model — Loan Default Prediction (Banking).
-    Estimates are produced by a statistical model trained on historical loan records
-    and are for coursework and research use, not a lending decision.
+    <div class="site-footer-inner">
+      <div class="brand-col">
+        <a class="brand" href="{{ url_for('home') }}">
+          <span class="mark">L</span> LoanML
+        </a>
+        Built for the ML Project SOP, Common Project Model — Loan Default
+        Prediction (Banking). Estimates are produced by a statistical model
+        trained on historical loan records and are for coursework and research
+        use, not a lending decision.
+      </div>
+      <div class="links">
+        <a href="{{ url_for('data_insights') }}">Data Insights</a>
+        <a href="{{ url_for('model_info') }}">Model Info</a>
+        <a href="{{ url_for('disclaimer') }}">Disclaimer</a>
+        <a href="{{ url_for('assessment_form') }}">Predict</a>
+      </div>
+    </div>
   </footer>
 
+  <script>
+    function toggleTheme() {
+      var current = document.documentElement.getAttribute('data-theme');
+      var next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try { localStorage.setItem('loanml-theme', next); } catch (e) { }
+    }
+  </script>
+
 </body>
+
 </html>

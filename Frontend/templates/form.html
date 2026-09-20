@@ -3,20 +3,23 @@
 {% block content %}
 
 <div class="subnav">
-  <a class="back-link" href="{{ url_for('home') }}">&larr; Back to Home</a>
+  <a class="back-link" href="{{ url_for('home') }}">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Back to Home
+  </a>
   <span class="pill">Logistic Regression</span>
 </div>
 
-<div class="page">
+<div class="container-narrow page">
   <div class="page-head">
     <h1>Loan Default Prediction Form</h1>
-    <p>Enter the applicant's financial details to assess default risk</p>
+    <p>Enter the applicant's financial details to assess default risk.</p>
   </div>
 
-  <form action="{{ url_for('predict') }}" method="POST">
+  <form action="{{ url_for('predict') }}" method="POST" novalidate>
 
     <div class="card">
-      <h2>Personal Information</h2>
+      <h2><span class="num">1</span> Personal Information</h2>
       <div class="field-grid">
         <div class="field">
           <label for="Age">Age</label>
@@ -66,7 +69,7 @@
     </div>
 
     <div class="card">
-      <h2>Financial Profile</h2>
+      <h2><span class="num">2</span> Financial Profile</h2>
       <div class="field-grid">
         <div class="field">
           <label for="Income">Annual income</label>
@@ -97,7 +100,7 @@
     </div>
 
     <div class="card">
-      <h2>Loan Details</h2>
+      <h2><span class="num">3</span> Loan Details</h2>
       <div class="field-grid">
         <div class="field">
           <label for="LoanAmount">Loan amount</label>
@@ -156,9 +159,14 @@
 
     <div class="card">
       <div class="form-submit">
-        <p class="fine-print">This estimate is produced by a statistical model.
-           It is not a lending decision — see the <a href="{{ url_for('disclaimer') }}">disclaimer</a>.</p>
-        <button class="submit-btn" type="submit">Assess This Application</button>
+        <p class="fine-print">
+          This estimate is produced by a statistical model. It is not a lending
+          decision — see the <a href="{{ url_for('disclaimer') }}">disclaimer</a>.
+        </p>
+        <button class="submit-btn" type="submit">
+          Assess This Application
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
       </div>
     </div>
 
