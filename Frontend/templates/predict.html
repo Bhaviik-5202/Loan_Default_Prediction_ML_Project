@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% block title %}Predict Risk — LoanML{% endblock %}
+{% block content %}
+
+<div class="wizard">
+  <div class="steps-track">
+    <div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div>
+    <div class="step-dot"></div><div class="step-dot"></div>
+  </div>
+  <div class="steps-labels">
+    <span>Applicant</span><span>Financial</span><span>Loan</span><span>Employment</span><span>Predict</span>
+  </div>
+
+  <div class="panel" id="wizardPanel">
+    <form id="wizardForm" onsubmit="return false;">
+
+      <div class="step-view" id="step-1">
+        <h2 class="step-title">Applicant Information</h2>
+        <p class="step-sub">Who is applying, and their household situation.</p>
+        <div class="field-grid">
+          <div class="field">
+            <label for="Age">Age</label>
+            <span class="hint">In years, 18–100.</span>
+            <input type="number" id="Age" name="Age" min="18" max="100" value="35" required>
+            <span class="err-msg">Age is required.</span>
+          </div>
+          <div class="field">
+            <label for="Education">Education</label>
+            <span class="hint">Highest level completed.</span>
+            <select id="Education" name="Education">
+              <option>High School</option><option selected>Bachelor's</option>
+              <option>Master's</option><option>PhD</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="MaritalStatus">Marital status</label>
+            <span class="hint">Current legal status.</span>
+            <select id="MaritalStatus" name="MaritalStatus">
+              <option>Single</option><option selected>Married</option><option>Divorced</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Number of dependents</label>
+            <span class="hint">People financially dependent on the applicant.</span>
+            <div class="toggle-row">
+              <input type="radio" id="dep-no" name="HasDependents" value="No" checked><label for="dep-no">None</label>
+              <input type="radio" id="dep-yes" name="HasDependents" value="Yes"><label for="dep-yes">One or more</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-view" id="step-2">
+        <h2 class="step-title">Financial Information</h2>
+        <p class="step-sub">Income, credit history, and existing obligations.</p>
+        <div class="field-grid">
+          <div class="field">
+            <label for="Income">Annual income ($)</label>
+            <span class="hint">Before tax.</span>
+            <input type="number" id="Income" name="Income" min="0" step="100" value="60000" required>
+            <span class="err-msg">Income is required.</span>
+          </div>
+          <div class="field">
+            <label for="CreditScore">Credit score</label>
+            <span class="hint">Range 300–850.</span>
+            <input type="number" id="CreditScore" name="CreditScore" min="300" max="850" value="650" required>
+            <span class="err-msg">Credit score is required.</span>
+          </div>
+          <div class="field">
+            <label for="NumCreditLines">Open credit lines</label>
+            <span class="hint">Active accounts on file.</span>
+            <input type="number" id="NumCreditLines" name="NumCreditLines" min="0" max="20" value="3" required>
+            <span class="err-msg">Required.</span>
+          </div>
+          <div class="field">
+            <label for="DTIRatio">Debt-to-income ratio</label>
+            <span class="hint">Monthly debt ÷ monthly income (e.g. 0.35).</span>
+            <input type="number" id="DTIRatio" name="DTIRatio" min="0" max="1" step="0.01" value="0.35" required>
+            <span class="err-msg">Required.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-view" id="step-3">
+        <h2 class="step-title">Loan Information</h2>
+        <p class="step-sub">What's being borrowed, and on what terms.</p>
+        <div class="field-grid">
+          <div class="field">
+            <label for="LoanAmount">Loan amount ($)</label>
+            <span class="hint">Total requested.</span>
+            <input type="number" id="LoanAmount" name="LoanAmount" min="0" step="100" value="15000" required>
+            <span class="err-msg">Required.</span>
+          </div>
+          <div class="field">
+            <label for="InterestRate">Interest rate (%)</label>
+            <span class="hint">Annual rate.</span>
+            <input type="number" id="InterestRate" name="InterestRate" min="0" max="40" step="0.01" value="12.5" required>
+            <span class="err-msg">Required.</span>
+          </div>
+          <div class="field">
+            <label for="LoanTerm">Loan term (months)</label>
+            <span class="hint">Repayment period.</span>
+            <select id="LoanTerm" name="LoanTerm">
+              <option>12</option><option selected>24</option><option>36</option><option>48</option><option>60</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="LoanPurpose">Loan purpose</label>
+            <span class="hint">What the loan is for.</span>
+            <select id="LoanPurpose" name="LoanPurpose">
+              <option>Auto</option><option>Business</option><option>Education</option><option>Home</option><option selected>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Has a mortgage</label>
+            <span class="hint">Existing mortgage on record.</span>
+            <div class="toggle-row">
+              <input type="radio" id="mort-no" name="HasMortgage" value="No" checked><label for="mort-no">No</label>
+              <input type="radio" id="mort-yes" name="HasMortgage" value="Yes"><label for="mort-yes">Yes</label>
+            </div>
+          </div>
+          <div class="field">
+            <label>Has a co-signer</label>
+            <span class="hint">Someone else backing the loan.</span>
+            <div class="toggle-row">
+              <input type="radio" id="co-no" name="HasCoSigner" value="No" checked><label for="co-no">No</label>
+              <input type="radio" id="co-yes" name="HasCoSigner" value="Yes"><label for="co-yes">Yes</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-view" id="step-4">
+        <h2 class="step-title">Employment Information</h2>
+        <p class="step-sub">Work status and tenure — strong signals of repayment stability.</p>
+        <div class="field-grid">
+          <div class="field">
+            <label for="EmploymentType">Employment type</label>
+            <span class="hint">Current work status.</span>
+            <select id="EmploymentType" name="EmploymentType">
+              <option selected>Full-time</option><option>Part-time</option><option>Self-employed</option><option>Unemployed</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="MonthsEmployed">Months at current employer</label>
+            <span class="hint">Tenure in months.</span>
+            <input type="number" id="MonthsEmployed" name="MonthsEmployed" min="0" max="600" value="24" required>
+            <span class="err-msg">Required.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-view" id="step-5">
+        <h2 class="step-title">Ready to predict</h2>
+        <p class="step-sub">We'll run the applicant's profile through the risk model and explain the result.</p>
+        <div class="card-sm">
+          <div style="font-size:.85rem;color:var(--muted);line-height:1.7">
+            All five sections are complete. Click <strong style="color:var(--text)">Predict Default Risk</strong>
+            below to run the analysis — this takes a few seconds and shows each step live.
+          </div>
+        </div>
+      </div>
+
+    </form>
+
+    <div class="wizard-nav">
+      <button class="btn-ghost" id="prevBtn" type="button">Back</button>
+      <div class="spacer"></div>
+      <button class="btn-primary" id="nextBtn" type="button">Continue</button>
+    </div>
+  </div>
+
+  <div class="panel analysis-view" id="analysisView"></div>
+  <div class="panel result-view" id="resultView"></div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/predict.js') }}"></script>
+{% endblock %}
