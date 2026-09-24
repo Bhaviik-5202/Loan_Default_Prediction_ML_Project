@@ -7,7 +7,7 @@
     <div>
       <h1 style="font-size:24px; font-weight:700; margin:0 0 6px 0;">Feature Importance & Attribution Analysis</h1>
       <p style="color:var(--text-muted); margin:0; font-size:14px;">
-        Quantitative ranking of risk drivers extracted from HistGradientBoosting and Logistic Regression models.
+        Quantitative ranking of risk drivers extracted from Decision Tree and Logistic Regression models.
       </p>
     </div>
     <div>
@@ -57,7 +57,7 @@
 <!-- Feature Importance Chart -->
 <div style="display:grid; grid-template-columns: 2fr 1fr; gap:20px; margin-bottom:24px;">
   <div class="card" style="padding:22px; border-radius:12px; background:var(--card-bg); border:1px solid var(--border);">
-    <h2 style="font-size:18px; font-weight:600; margin:0 0 16px 0;">HistGradientBoosting Feature Importance (Gini / Permutation)</h2>
+    <h2 style="font-size:18px; font-weight:600; margin:0 0 16px 0;">Decision Tree Feature Importance (Gini / Entropy)</h2>
     <div style="height:340px;">
       <canvas id="featureImportanceChart"></canvas>
     </div>

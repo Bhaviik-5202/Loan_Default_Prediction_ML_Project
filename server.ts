@@ -80,7 +80,7 @@ app.get(['/data/insights', '/dataset/explorer'], async (req: Request, res: Respo
 // Page 6: Model Details
 app.get('/model/details', async (req: Request, res: Response) => {
   const allModels = await modelService.getModels();
-  const requestedId = typeof req.query.model === 'string' ? req.query.model : 'gradient-boosting';
+  const requestedId = typeof req.query.model === 'string' ? req.query.model : 'logistic-regression';
   const currentModel = (await modelService.getModelById(requestedId)) || allModels[0];
 
   res.render('model_details', { allModels, currentModel });

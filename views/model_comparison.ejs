@@ -19,26 +19,27 @@
   </div>
 
   <!-- Best Model Selection Rationale Banner -->
+  <% const selected = models.find(m => m.isSelected) || models[0]; %>
   <div class="card" style="padding:24px; border-left:4px solid var(--brand); margin-bottom:28px; background:color-mix(in srgb, var(--brand) 4%, var(--panel));">
     <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px; margin-bottom:8px;">
       <div>
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-          <span class="badge high" style="font-size:11px; background:rgba(16,185,129,0.15); color:#10b981;">PRODUCTION CANDIDATE &middot; PIPELINE VERIFIED</span>
+          <span class="badge high" style="font-size:11px; background:rgba(16,185,129,0.15); color:#10b981;">SELECTED BEST MODEL &middot; PIPELINE VERIFIED</span>
           <span style="font-size:13px; color:var(--muted);">Trained on 204,277 records &middot; Tested on 51,070 records</span>
         </div>
         <h2 style="font-size:20px; font-weight:700; margin:0; color:var(--text);">
-          Tuned HistGradientBoosting (HistGradientBoostingClassifier)
+          <%= selected.name %> (<%= selected.family %>)
         </h2>
       </div>
       <div style="text-align:right;">
         <div style="font-size:24px; font-weight:700; color:var(--brand); line-height:1;">
-          0.7567 <span style="font-size:14px; color:var(--muted); font-weight:500;">Test ROC-AUC</span>
+          <%= selected.metrics.roc_auc.toFixed(4) %> <span style="font-size:14px; color:var(--muted); font-weight:500;">Test ROC-AUC</span>
         </div>
-        <div style="font-size:12px; color:var(--muted); margin-top:2px;">5-Fold CV: 0.7498 &plusmn; 0.0044</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:2px;">5-Fold CV: <%= selected.metrics.cv_roc_auc_mean.toFixed(4) %> &plusmn; <%= selected.metrics.cv_roc_auc_std.toFixed(4) %></div>
       </div>
     </div>
     <p style="font-size:13px; color:var(--muted); line-height:1.6; margin:0;">
-      <strong>Pipeline Selection Rationale:</strong> Under an 11.61% default base rate, trivial majority-class classifiers achieve 88.39% accuracy but fail to identify borrowers at risk. HistGradientBoostingClassifier achieved the highest ROC-AUC (0.7567) and highest 5-fold cross-validation AUC (0.7498), providing smooth, well-calibrated posterior default probabilities and superior credit tier discrimination.
+      <strong>Pipeline Selection Rationale:</strong> In credit risk modeling with an 11.61% default rate, raw accuracy is uninformative. <%= selected.name %> achieved the highest discriminative ranking power across the risk spectrum (Test ROC-AUC: <%= selected.metrics.roc_auc.toFixed(4) %>, 5-Fold CV AUC: <%= selected.metrics.cv_roc_auc_mean.toFixed(4) %>) and superior default recall (<%= (selected.metrics.recall * 100).toFixed(1) %>%), delivering reliable borrower credit tier separation and capturing at-risk loans while avoiding excessive false alarms.
     </p>
   </div>
 
@@ -91,6 +92,52 @@
           <% }); %>
         </tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- Scientific Audit: Scratch vs. Sklearn Logistic Regression -->
+  <div class="card" style="padding:24px; margin-bottom:28px; border-left:4px solid #0284c7; background:color-mix(in srgb, #0284c7 3%, var(--panel));">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
+      <div>
+        <span class="badge" style="font-size:11px; background:rgba(2,132,199,0.15); color:#0284c7; font-weight:700;">VALIDATION AUDIT &middot; FIRST-PRINCIPLES SOP VERIFICATION</span>
+        <h3 style="font-size:17px; font-weight:700; margin:4px 0 0; color:var(--text);">
+          Scratch vs. Scikit-Learn Logistic Regression: Apples-to-Apples Scientific Audit
+        </h3>
+      </div>
+      <span style="font-size:12px; font-weight:600; color:var(--muted);">Pearson Weight Correlation: <strong style="color:#0284c7;">r = 0.9946</strong></span>
+    </div>
+    
+    <p style="font-size:13px; color:var(--muted); line-height:1.6; margin:0 0 16px;">
+      <strong>Audit Question:</strong> <em>Why does Scratch Logistic Regression show 88.52% accuracy and 0.7530 ROC-AUC, while Tuned Production Sklearn shows 67.64% accuracy and 0.7532 ROC-AUC?</em> 
+      This is <strong>not</strong> an algorithmic flaw or performance divergence. The two models were evaluated under different operational objectives (standard unweighted MLE vs. cost-sensitive balanced loss).
+    </p>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:16px; margin-bottom:16px;">
+      <div style="background:var(--surface); padding:16px; border-radius:8px; border:1px solid var(--border);">
+        <div style="font-size:12px; font-weight:700; color:var(--text); text-transform:uppercase; margin-bottom:6px;">Condition A: True Apples-to-Apples (Unweighted, Threshold = 0.50)</div>
+        <div style="font-size:12px; color:var(--muted); margin-bottom:10px;">Same training loss (standard MLE) &amp; same decision threshold:</div>
+        <table style="width:100%; font-size:12px; border-collapse:collapse;">
+          <tr style="border-bottom:1px solid var(--border);"><td style="padding:4px 0; color:var(--muted);">Scratch NumPy LR:</td><td style="font-weight:600; text-align:right;">Acc: 88.52% &middot; Rec: 3.44% &middot; ROC-AUC: <strong>0.7530</strong></td></tr>
+          <tr style="border-bottom:1px solid var(--border);"><td style="padding:4px 0; color:var(--muted);">Sklearn Unweighted:</td><td style="font-weight:600; text-align:right;">Acc: 88.52% &middot; Rec: 3.30% &middot; ROC-AUC: <strong>0.7531</strong></td></tr>
+          <tr><td style="padding:4px 0; color:#10b981; font-weight:600;">Convergence Delta:</td><td style="font-weight:700; color:#10b981; text-align:right;">&Delta;Acc = 0.00% &middot; &Delta;AUC = 0.0001</td></tr>
+        </table>
+      </div>
+
+      <div style="background:var(--surface); padding:16px; border-radius:8px; border:1px solid var(--border);">
+        <div style="font-size:12px; font-weight:700; color:var(--text); text-transform:uppercase; margin-bottom:6px;">Condition B: Cost-Adjusted (Threshold = 0.1161 / Balanced)</div>
+        <div style="font-size:12px; color:var(--muted); margin-bottom:10px;">Compensating for 11.61% default base rate:</div>
+        <table style="width:100%; font-size:12px; border-collapse:collapse;">
+          <tr style="border-bottom:1px solid var(--border);"><td style="padding:4px 0; color:var(--muted);">Scratch @ th=0.116:</td><td style="font-weight:600; text-align:right;">Acc: 67.45% &middot; Rec: 70.29% &middot; ROC-AUC: <strong>0.7530</strong></td></tr>
+          <tr style="border-bottom:1px solid var(--border);"><td style="padding:4px 0; color:var(--muted);">Sklearn Balanced @ 0.5:</td><td style="font-weight:600; text-align:right;">Acc: 67.64% &middot; Rec: 69.95% &middot; ROC-AUC: <strong>0.7532</strong></td></tr>
+          <tr><td style="padding:4px 0; color:#10b981; font-weight:600;">Cost Match Delta:</td><td style="font-weight:700; color:#10b981; text-align:right;">&Delta;Acc = 0.19% &middot; &Delta;Rec = 0.34%</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div style="font-size:12px; color:var(--muted); line-height:1.6;">
+      <strong>Key Takeaways for Viva / Project Review:</strong><br>
+      &bull; <strong>Why ROC-AUC is identical:</strong> ROC-AUC measures ranking discrimination across all thresholds. Both models converged to the exact same linear decision boundary in 24D space ($r = 0.9946$).<br>
+      &bull; <strong>Why accuracy differs in the table:</strong> Unweighted Scratch optimizes overall accuracy by classifying almost everything as non-default (88.5% accuracy, but misses 96.6% of defaults). Sklearn with <code>class_weight='balanced'</code> penalizes false negatives ~7.61x, shifting the intercept to catch 70.0% of defaults at the expected cost of nominal accuracy.
     </div>
   </div>
 

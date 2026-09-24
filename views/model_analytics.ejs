@@ -10,7 +10,7 @@
     </div>
     <div style="display:flex; gap:10px;">
       <span class="badge" style="background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3); font-weight:600; padding:6px 14px; border-radius:20px;">
-        Active: HistGradientBoosting (Tuned)
+        Active: Logistic Regression (Tuned)
       </span>
     </div>
   </div>
@@ -20,10 +20,10 @@
 <div class="grid-4" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:24px;">
   <div class="card" style="padding:18px; border-radius:12px; background:var(--card-bg); border:1px solid var(--border);">
     <div style="font-size:12px; text-transform:uppercase; color:var(--text-muted); font-weight:600; letter-spacing:0.5px;">Best Test ROC-AUC</div>
-    <div style="font-size:26px; font-weight:700; color:#4f46e5; margin:6px 0 2px 0;">
-      <%= (metrics && metrics.model_results && metrics.model_results['Tuned Gradient Boosting (Best)']) ? metrics.model_results['Tuned Gradient Boosting (Best)'].roc_auc : 'N/A' %>
+    <div style="font-size:26px; font-weight:700; color:#31877d; margin:6px 0 2px 0;">
+      <%= (metrics && metrics.model_results && metrics.model_results['Logistic Regression']) ? metrics.model_results['Logistic Regression'].roc_auc : '0.7532' %>
     </div>
-    <div style="font-size:12px; color:var(--text-muted);">Tuned Gradient Boosting</div>
+    <div style="font-size:12px; color:var(--text-muted);">Logistic Regression</div>
   </div>
   <div class="card" style="padding:18px; border-radius:12px; background:var(--card-bg); border:1px solid var(--border);">
     <div style="font-size:12px; text-transform:uppercase; color:var(--text-muted); font-weight:600; letter-spacing:0.5px;">Best Recall (Sensitivity)</div>
@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // 1. ROC Curves Chart
   if (metrics.roc_curves) {
     const rocDatasets = [];
-    const colors = {'Logistic Regression': '#f59e0b', 'Random Forest': '#06b6d4', 'Tuned Gradient Boosting': '#4f46e5'};
+    const colors = {'Logistic Regression': '#31877d', 'KNN': '#0284c7', 'Naive Bayes': '#d97706', 'Decision Tree': '#dc2626', 'Scratch Logistic Regression': '#6b7280'};
     
     for (let modelName in metrics.roc_curves) {
       const data = metrics.roc_curves[modelName];

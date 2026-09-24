@@ -151,7 +151,7 @@
       <div>
         <h3 style="font-size:16px; font-weight:700; margin:0 0 4px;">Feature Importance / Signal Weights</h3>
         <p style="font-size:12px; color:var(--muted); margin:0;">
-          <%= currentModel.algorithm.includes('Linear') || currentModel.algorithm.includes('Gradient Descent') ? 'Parametric Log-Odds Regression Coefficients' : 'Permutation / Gini Gain Attribution Score' %>
+          <%= currentModel.family.includes('Logistic') || currentModel.id.includes('logistic') ? 'Parametric Standardized Log-Odds Coefficients' : currentModel.id === 'knn' ? 'Neighborhood Spatial Proximity Contribution' : currentModel.id === 'naive-bayes' ? 'Standardized Feature Mean Separation by Class' : 'Gini / Entropy Impurity Reduction Gain' %>
         </p>
       </div>
       <span style="font-size:12px; color:var(--muted);">Ranked from highest magnitude</span>

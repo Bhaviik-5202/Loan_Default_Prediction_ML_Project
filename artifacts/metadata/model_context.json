@@ -1,0 +1,15 @@
+{
+  "project_name": "Loan Default Prediction",
+  "required_primary_models": [
+    "Logistic Regression",
+    "KNN",
+    "Naive Bayes",
+    "Decision Tree"
+  ],
+  "scratch_model": "Scratch Logistic Regression (NumPy)",
+  "total_dataset_rows": 255347,
+  "train_rows": 204277,
+  "test_rows": 51070,
+  "selected_best_model": "Logistic Regression",
+  "pipeline_runtime_seconds": 249.85
+}

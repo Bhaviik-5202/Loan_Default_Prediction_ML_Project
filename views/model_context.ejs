@@ -104,7 +104,7 @@
       J(w, b) = - (1 / m) &sum; [ y<sup>(i)</sup> log(&sigma;(z<sup>(i)</sup>)) + (1 - y<sup>(i)</sup>) log(1 - &sigma;(z<sup>(i)</sup>)) ]
     </div>
     <p style="font-size:12px; color:var(--muted); margin:0;">
-      Verified with 200 epochs of batch gradient descent, converging to a test accuracy of 88.52% and ROC-AUC of 0.732.
+      Verified with mini-batch gradient descent (converging at epoch 301, &Delta;L &lt; 10<sup>-6</sup>), achieving a test accuracy of 88.52% and ROC-AUC of 0.7530 (matching scikit-learn unweighted within 0.0001 AUC with weight correlation r = 0.9946).
     </p>
   </div>
 

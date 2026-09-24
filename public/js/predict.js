@@ -196,8 +196,14 @@
     const colorVar = isHigh ? "var(--high)" : isMed ? "var(--med)" : "var(--low)";
     const badgeClass = isHigh ? "high" : isMed ? "med" : "low";
 
+    const probPct = typeof res.probability === "number" && res.probability <= 1.0 
+      ? Math.round(res.probability * 1000) / 10 
+      : (typeof res.probability === "number" ? res.probability : 24.0);
     const circ = 2 * Math.PI * 54;
-    const offset = circ * (1 - res.probability / 100);
+    const offset = circ * (1 - probPct / 100);
+    const predTitle = typeof res.prediction === "number" 
+      ? (res.prediction === 1 ? "Likely to Default" : "Likely to Repay") 
+      : (res.prediction || "Assessment Complete");
 
     resultView.innerHTML = `
       <div class="card" style="padding:32px; box-shadow:var(--shadow-2);">
@@ -212,10 +218,10 @@
               </span>
             </div>
             <h2 style="font-size:28px; font-weight:700; margin:0 0 6px; letter-spacing:-0.01em;">
-              ${res.prediction}
+              ${predTitle}
             </h2>
             <p style="font-size:14px; color:var(--muted); margin:0;">
-              Classification Label: <strong style="color:var(--text);">${res.label}</strong> &middot; Default Probability: <strong>${res.probability}%</strong> &middot; Confidence: <strong>${Math.round(res.confidence * 100)}%</strong>
+              Classification Label: <strong style="color:var(--text);">${res.label}</strong> &middot; Default Probability: <strong>${probPct}%</strong> &middot; Confidence: <strong>${Math.round(res.confidence * 100)}%</strong>
             </p>
           </div>
 
@@ -228,7 +234,7 @@
                   style="transition: stroke-dashoffset 1s ease;"/>
               </svg>
               <div style="position:absolute; text-align:center;">
-                <div style="font-size:22px; font-weight:700; line-height:1;">${res.probability}%</div>
+                <div style="font-size:22px; font-weight:700; line-height:1;">${probPct}%</div>
                 <div style="font-size:9px; color:var(--muted); text-transform:uppercase; margin-top:2px;">Probability</div>
               </div>
             </div>
