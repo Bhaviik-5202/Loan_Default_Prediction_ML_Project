@@ -23,6 +23,37 @@
   });
 })();
 
+// Mobile sidebar toggle
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("sbToggle");
+  const sb = document.getElementById("sidebar");
+  if (btn && sb) {
+    btn.addEventListener("click", () => sb.classList.toggle("open"));
+    document.addEventListener("click", (e) => {
+      if (sb.classList.contains("open") && !sb.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+        sb.classList.remove("open");
+      }
+    });
+  }
+});
+
+// Number counter animation for stat cards
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll("[data-count]").forEach((el) => {
+    const target = parseFloat(el.dataset.count);
+    const suffix = el.dataset.suffix || "";
+    const decimals = el.dataset.count.includes(".") ? 1 : 0;
+    let cur = 0;
+    const steps = 30;
+    const inc = target / steps;
+    const iv = setInterval(() => {
+      cur += inc;
+      if (cur >= target) { cur = target; clearInterval(iv); }
+      el.textContent = cur.toFixed(decimals) + suffix;
+    }, 20);
+  });
+});
+
 // Hero mini-visual: animate ring + bars on load
 document.addEventListener("DOMContentLoaded", () => {
   const ring = document.getElementById("heroRing");

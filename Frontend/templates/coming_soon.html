@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}{{ item.label }} — LoanML{% endblock %}
+{% block crumb %}<b>{{ item.label }}</b>{% endblock %}
+{% block content %}
+
+<div class="soon-wrap">
+  <div class="soon-icon">{{ icon(item.icon, 26)|safe }}</div>
+  <span class="soon-badge">Coming Soon</span>
+  <h1>{{ item.label }}</h1>
+  <p>{{ item.desc }}</p>
+  <a class="btn-primary" href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+</div>
+
+{% endblock %}

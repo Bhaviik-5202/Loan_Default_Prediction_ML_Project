@@ -1,36 +1,85 @@
 """
-Week 8 — Frontend only.
+LoanML — Loan Default Prediction & Credit Risk Analytics Platform.
 
-/api/predict below is a transparent placeholder scoring rule, NOT the
-trained model. It exists so the wizard's animated analysis -> result flow
-is fully clickable end-to-end right now.
+Architecture notes (read this before adding a page):
 
-Week 9 swap-in: load the saved LogisticRegression + StandardScaler from
-Loan_Default_Prediction.ipynb inside predict_api(), one-hot encode the
-incoming JSON the same way df_encoded was built, scale it, and return
-model.predict_proba() in place of the risk_score formula below. The
-response shape (probability, risk_level, risk_score, prediction, factors,
-profile, recommendation) is what predict.js already expects, so the
-frontend needs no changes.
+- constants.py is the single source of truth for the sidebar. Every nav
+  item lists a route and a status ("live" or "soon").
+- Routes marked "live" are wired to a real view function below.
+- Routes marked "soon" are auto-registered at startup (see the loop near
+  the bottom) to render templates/coming_soon.html — so nothing in the
+  sidebar ever 404s, and turning a placeholder into a real page later is
+  just: build the template, add a real view function, flip its status.
+- data/mock.py is a clearly-separated mock data layer for Dashboard and
+  Prediction History. Swap its functions for real queries when a
+  predictions store exists; every caller already expects the same shape.
+- /api/predict is a placeholder scoring formula, not the trained model —
+  see the comment on predict_api() for exactly what Week 9 replaces.
 """
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect, url_for
+
+from constants import NAV, find_nav_item
+from icons import icon_svg
+from data.mock import get_applications, get_dashboard_stats, get_prediction_trend
 
 app = Flask(__name__)
+app.jinja_env.globals["icon"] = icon_svg
 
+
+@app.context_processor
+def inject_nav():
+    return {"nav": NAV}
+
+
+# ---------------------------------------------------------------- mock data (cached once)
+
+_APPLICATIONS = get_applications()
+
+
+# ---------------------------------------------------------------- live pages
 
 @app.route("/")
-def home():
-    return render_template("index.html", active="home")
+def index():
+    return redirect(url_for("dashboard"))
+
+
+@app.route("/dashboard")
+def dashboard():
+    stats = get_dashboard_stats(_APPLICATIONS)
+    trend = get_prediction_trend(_APPLICATIONS)
+    recent = _APPLICATIONS[:8]
+    return render_template("dashboard.html", stats=stats, trend=trend, recent=recent)
 
 
 @app.route("/predict")
 def predict_page():
-    return render_template("predict.html", active="predict")
+    return render_template("predict.html")
+
+
+@app.route("/simulator")
+def simulator_page():
+    return render_template("simulator.html")
+
+
+@app.route("/predictions")
+def history_page():
+    return render_template("history.html", apps=_APPLICATIONS)
 
 
 @app.route("/api/predict", methods=["POST"])
 def predict_api():
+    """
+    Placeholder scoring formula — NOT the trained model.
+
+    Week 9 swap-in: load the saved LogisticRegression + StandardScaler
+    from Loan_Default_Prediction.ipynb here, one-hot encode the incoming
+    JSON the same way df_encoded was built, scale it, and return
+    model.predict_proba() in place of the `risk` formula below. The
+    response shape (probability, risk_level, risk_score, prediction,
+    factors, profile, recommendation) is what predict.js, simulator.js
+    already expect — no frontend changes needed.
+    """
     d = request.get_json(force=True) or {}
 
     credit_score = float(d.get("CreditScore", 650))
@@ -42,9 +91,8 @@ def predict_api():
     has_mortgage = d.get("HasMortgage", "No") == "Yes"
     has_cosigner = d.get("HasCoSigner", "No") == "Yes"
 
-    loan_to_income = min(loan_amount / income, 2) / 2  # 0..1
+    loan_to_income = min(loan_amount / income, 2) / 2
 
-    # --- placeholder risk formula, replace with model.predict_proba() in Week 9 ---
     risk = (
         (1 - min(credit_score, 850) / 850) * 0.35
         + dti * 0.30
@@ -99,6 +147,21 @@ def predict_api():
         "profile": profile,
         "recommendation": {"action": action, "points": points},
     })
+
+
+# ---------------------------------------------------------------- auto-registered "Coming Soon" pages
+
+def _make_soon_view(item):
+    def view():
+        return render_template("coming_soon.html", item=item)
+    view.__name__ = f"soon_{item['key']}"
+    return view
+
+
+for group in NAV:
+    for nav_item in group["items"]:
+        if nav_item["status"] == "soon":
+            app.add_url_rule(nav_item["route"], view_func=_make_soon_view(nav_item))
 
 
 if __name__ == "__main__":

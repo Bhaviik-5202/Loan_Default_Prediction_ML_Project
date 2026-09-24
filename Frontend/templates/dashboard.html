@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — LoanML{% endblock %}
+{% block crumb %}<b>Dashboard</b>{% endblock %}
+{% block content %}
+
+<div class="page-title-row">
+  <div>
+    <h1>Portfolio Overview</h1>
+    <p>Live snapshot across all scored applications.</p>
+  </div>
+</div>
+
+<div class="stat-cards">
+  <div class="stat-card2">
+    <div class="top"><div class="ic" style="background:var(--brand-soft);color:var(--brand)">{{ icon('folder',16)|safe }}</div></div>
+    <div class="val" data-count="{{ stats.total_applications }}">0</div>
+    <div class="lbl">Total Applications</div>
+  </div>
+  <div class="stat-card2">
+    <div class="top"><div class="ic" style="background:var(--high-soft);color:var(--high)">{{ icon('activity',16)|safe }}</div></div>
+    <div class="val" data-count="{{ stats.high_risk }}">0</div>
+    <div class="lbl">High Risk Applications</div>
+  </div>
+  <div class="stat-card2">
+    <div class="top"><div class="ic" style="background:var(--low-soft);color:var(--low)">{{ icon('target',16)|safe }}</div></div>
+    <div class="val" data-count="{{ stats.low_risk }}">0</div>
+    <div class="lbl">Low Risk Applications</div>
+  </div>
+  <div class="stat-card2">
+    <div class="top"><div class="ic" style="background:var(--brand-soft);color:var(--brand)">{{ icon('cpu',16)|safe }}</div></div>
+    <div class="val" data-count="{{ stats.model_accuracy }}" data-suffix="%">0</div>
+    <div class="lbl">Model Accuracy</div>
+  </div>
+</div>
+
+<div class="stat-cards">
+  <div class="stat-card2">
+    <div class="val" data-count="{{ stats.avg_probability }}" data-suffix="%">0</div>
+    <div class="lbl">Avg. Default Probability</div>
+  </div>
+  <div class="stat-card2">
+    <div class="val" data-count="{{ stats.avg_credit_score }}">0</div>
+    <div class="lbl">Avg. Credit Score</div>
+  </div>
+  <div class="stat-card2">
+    <div class="val" data-count="{{ stats.default_rate }}" data-suffix="%">0</div>
+    <div class="lbl">Default Rate</div>
+  </div>
+  <div class="stat-card2">
+    <div class="val" data-count="{{ stats.medium_risk }}">0</div>
+    <div class="lbl">Medium Risk Applications</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="chart-card">
+    <h3>Prediction Trend</h3>
+    <p class="sub">Applications scored per day, last 14 days.</p>
+    <div id="trendChart"></div>
+  </div>
+  <div class="chart-card">
+    <h3>Risk Distribution</h3>
+    <p class="sub">Share of applications by risk level.</p>
+    <div style="display:flex;justify-content:center"><div id="riskDonut"></div></div>
+    <div class="legend">
+      <div class="li"><span class="sw" style="background:var(--low)"></span>Low ({{ stats.low_risk }})</div>
+      <div class="li"><span class="sw" style="background:var(--med)"></span>Medium ({{ stats.medium_risk }})</div>
+      <div class="li"><span class="sw" style="background:var(--high)"></span>High ({{ stats.high_risk }})</div>
+    </div>
+  </div>
+</div>
+
+<div class="chart-card">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    <div>
+      <h3 style="margin-bottom:2px">Recent Predictions</h3>
+      <p class="sub" style="margin:0">Most recently scored applications.</p>
+    </div>
+    <a class="btn-ghost" href="{{ url_for('history_page') }}">View All</a>
+  </div>
+  <div class="table-wrap">
+    <table class="dtable">
+      <thead><tr><th>Applicant</th><th>Credit Score</th><th>Loan Amount</th><th>Risk Level</th><th>Probability</th><th>Prediction</th><th>Date</th></tr></thead>
+      <tbody>
+        {% for a in recent %}
+        <tr>
+          <td>{{ a.name }}</td>
+          <td>{{ a.credit_score }}</td>
+          <td>${{ '{:,}'.format(a.loan_amount) }}</td>
+          <td><span class="badge {{ 'low' if a.risk_level=='Low' else 'med' if a.risk_level=='Medium' else 'high' }}">{{ a.risk_level }}</span></td>
+          <td>{{ a.probability }}%</td>
+          <td>{{ a.prediction }}</td>
+          <td>{{ a.date }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script>
+  donutChart(document.getElementById('riskDonut'), [
+    {value: {{ stats.low_risk }}, color: 'var(--low)'},
+    {value: {{ stats.medium_risk }}, color: 'var(--med)'},
+    {value: {{ stats.high_risk }}, color: 'var(--high)'},
+  ]);
+  lineChart(document.getElementById('trendChart'), {{ trend|tojson }});
+</script>
+{% endblock %}
