@@ -8,12 +8,13 @@ import { ModelSpecification } from '../types/index.js';
 import { DEV_EVALUATED_MODELS, DEV_ROC_CURVES } from '../data/developmentMockData.js';
 
 export class ModelService {
-  private useRemoteApi: boolean;
-  private apiBase: string;
+  private get useRemoteApi(): boolean {
+    return process.env.USE_REMOTE_BACKEND !== 'false';
+  }
 
-  constructor() {
-    this.useRemoteApi = process.env.USE_REMOTE_BACKEND === 'true';
-    this.apiBase = process.env.FLASK_BACKEND_URL || '/api';
+  private get apiBase(): string {
+    const rawUrl = (process.env.FLASK_BACKEND_URL || 'http://127.0.0.1:5001').replace(/\/+$/, '');
+    return rawUrl.endsWith('/api') ? rawUrl : `${rawUrl}/api`;
   }
 
   async getModels(): Promise<ModelSpecification[]> {
@@ -22,13 +23,21 @@ export class ModelService {
         const res = await fetch(`${this.apiBase}/models`);
         if (res.ok) return await res.json();
       } catch (err) {
-        console.warn('Remote /api/models unavailable, using development model definitions');
+        console.warn('Remote /api/models unavailable, using fallback model definitions');
       }
     }
     return DEV_EVALUATED_MODELS;
   }
 
   async getModelById(id: string): Promise<ModelSpecification | null> {
+    if (this.useRemoteApi && typeof fetch !== 'undefined') {
+      try {
+        const res = await fetch(`${this.apiBase}/models/${id}`);
+        if (res.ok) return await res.json();
+      } catch (err) {
+        console.warn(`Remote /api/models/${id} unavailable, falling back`);
+      }
+    }
     const models = await this.getModels();
     return models.find(m => m.id === id || m.name.toLowerCase() === id.toLowerCase()) || null;
   }
@@ -39,6 +48,21 @@ export class ModelService {
   }
 
   async getModelComparison(): Promise<{ models: ModelSpecification[]; rocCurves: any }> {
+    if (this.useRemoteApi && typeof fetch !== 'undefined') {
+      try {
+        const res = await fetch(`${this.apiBase}/models/comparison`);
+        if (res.ok) {
+          const data = await res.json();
+          return {
+            models: data.models || await this.getModels(),
+            rocCurves: data.rocCurves || DEV_ROC_CURVES,
+          };
+        }
+      } catch (err) {
+        console.warn('Remote /api/models/comparison unavailable, using fallback comparison data');
+      }
+    }
+
     const models = await this.getModels();
     return {
       models,

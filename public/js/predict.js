@@ -279,7 +279,7 @@
           </div>
         </div>
 
-        <!-- Underwriting Recommendation -->
+        <!-- Model Output & Educational Guidance -->
         <div style="background:color-mix(in srgb, var(--brand) 8%, var(--panel)); border:1px solid color-mix(in srgb, var(--brand) 25%, transparent); border-radius:12px; padding:20px; margin-bottom:28px;">
           <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -288,6 +288,9 @@
           <ul style="margin:0; padding-left:20px; font-size:13px; color:var(--text); line-height:1.7;">
             ${res.recommendation.points.map((p) => `<li>${p}</li>`).join("")}
           </ul>
+          <div style="margin-top:12px; padding-top:10px; border-top:1px dashed color-mix(in srgb, var(--brand) 20%, transparent); font-size:11px; color:var(--muted);">
+            <em>Notice: This evaluation is an educational machine learning model simulation based on public benchmark data and is not an actual commercial lending or underwriting decision.</em>
+          </div>
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">

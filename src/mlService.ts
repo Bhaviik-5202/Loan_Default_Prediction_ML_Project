@@ -148,28 +148,28 @@ export function predictLoanRisk(inputDict: Record<string, any>) {
   let points: string[];
 
   if (riskLevel === "High") {
-    action = "High Risk — Manual Underwriting Required";
+    action = "Predicted Default Risk: High (Model Classification: Default)";
     points = [
-      `Default probability is ${probability}% — exceeds acceptable lending threshold.`,
-      "Require debt consolidation or reduction of loan principal.",
-      "Mandate co-signer with prime credit (CreditScore ≥ 720) or additional collateral.",
-      "Verify income via bank statements and recent tax filings before proceeding.",
+      `Model estimated default probability is ${probability}%.`,
+      "Elevated default risk driven by high interest rate, short tenure, or high DTI burden.",
+      "In commercial credit underwriting, substantial collateral or a prime co-signer would be required.",
+      "Notice: This prediction is an ML model output for demonstration purposes and does not constitute financial advice.",
     ];
   } else if (riskLevel === "Medium") {
-    action = "Moderate Risk — Standard Review with Conditions";
+    action = "Predicted Default Risk: Moderate (Model Classification: Borderline No Default)";
     points = [
-      `Default probability is ${probability}% — borderline profile.`,
-      "Verify employment stability (minimum 12 months continuous tenure).",
-      "Consider adjusting loan term to reduce monthly payment burden.",
-      "Review existing credit lines and debt repayment track record.",
+      `Model estimated default probability is ${probability}%.`,
+      "Intermediate risk profile with mixed stability and debt indicators.",
+      "Standard lending review would inspect recent paystubs and verify debt service obligations.",
+      "Notice: This prediction is an ML model output for demonstration purposes and does not constitute financial advice.",
     ];
   } else {
-    action = "Low Risk — Fast-Track Approval Recommended";
+    action = "Predicted Default Risk: Low (Model Classification: No Default)";
     points = [
-      `Default probability is very low (${probability}%).`,
-      "Strong financial and credit fundamentals meet prime lending benchmarks.",
-      "Eligible for preferred interest rate tier and expedited closing.",
-      "Automated document verification and streamlined underwriting path.",
+      `Model estimated default probability is low (${probability}%).`,
+      "Strong financial and credit fundamentals meet prime benchmark criteria in the Kaggle dataset.",
+      "Characteristics align with prime-tier borrowers having low historical default incidence.",
+      "Notice: This prediction is an ML model output for demonstration purposes and does not constitute financial advice.",
     ];
   }
 

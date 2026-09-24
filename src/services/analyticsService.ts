@@ -8,12 +8,13 @@ import { DatasetInsights } from '../types/index.js';
 import { DEV_DATASET_INSIGHTS } from '../data/developmentMockData.js';
 
 export class AnalyticsService {
-  private useRemoteApi: boolean;
-  private apiEndpoint: string;
+  private get useRemoteApi(): boolean {
+    return process.env.USE_REMOTE_BACKEND !== 'false';
+  }
 
-  constructor() {
-    this.useRemoteApi = process.env.USE_REMOTE_BACKEND === 'true';
-    this.apiEndpoint = process.env.FLASK_BACKEND_URL || '/api/data/insights';
+  private get apiEndpoint(): string {
+    const rawUrl = (process.env.FLASK_BACKEND_URL || 'http://127.0.0.1:5001').replace(/\/+$/, '');
+    return rawUrl.endsWith('/api/data/insights') ? rawUrl : `${rawUrl}/api/data/insights`;
   }
 
   async getDataInsights(): Promise<DatasetInsights> {

@@ -5,6 +5,7 @@
 
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { spawn, ChildProcess } from 'child_process';
 import express, { Request, Response, NextFunction } from 'express';
 import { NAV } from './src/constants.js';
 import { icon } from './src/icons.js';
@@ -21,6 +22,59 @@ import { normalizePayload, validatePredictionPayload, predictLoanRisk } from './
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Ensure remote backend environment configuration is active as required
+process.env.USE_REMOTE_BACKEND = 'true';
+process.env.FLASK_BACKEND_URL = process.env.FLASK_BACKEND_URL && process.env.FLASK_BACKEND_URL.trim() !== ''
+  ? process.env.FLASK_BACKEND_URL
+  : 'http://127.0.0.1:5001';
+
+// Manage Python Flask Inference Engine Process
+let flaskProcess: ChildProcess | null = null;
+
+function ensureFlaskBackend(): void {
+  const flaskUrl = (process.env.FLASK_BACKEND_URL || 'http://127.0.0.1:5001').replace(/\/+$/, '');
+  fetch(`${flaskUrl}/api/health`)
+    .then((res) => {
+      if (res.ok) {
+        console.log(`[Flask Backend] Active and healthy at ${flaskUrl}`);
+      } else {
+        throw new Error(`Health status: ${res.status}`);
+      }
+    })
+    .catch(() => {
+      console.log(`[Flask Backend] Spawning Python Flask service on ${flaskUrl}...`);
+      const childEnv: Record<string, string | undefined> = { ...process.env, FLASK_PORT: '5001', FLASK_HOST: '127.0.0.1' };
+      // Delete outer PORT from child so Flask doesn't try to bind to the outer Node port
+      delete childEnv['PORT'];
+
+      flaskProcess = spawn('python3', [path.join(__dirname, 'flask_backend', 'app.py')], {
+        env: childEnv,
+        stdio: ['ignore', 'inherit', 'inherit'],
+      });
+
+      flaskProcess.on('error', (err) => {
+        console.error('[Flask Backend] Spawning error:', err);
+      });
+
+      flaskProcess.on('exit', (code, signal) => {
+        if (code !== 0 && code !== null) {
+          console.warn(`[Flask Backend] Exited with code ${code} signal ${signal}`);
+        }
+      });
+    });
+}
+
+ensureFlaskBackend();
+
+process.on('SIGINT', () => {
+  flaskProcess?.kill();
+  process.exit(0);
+});
+process.on('SIGTERM', () => {
+  flaskProcess?.kill();
+  process.exit(0);
+});
+
 const app = express();
 
 // View Engine & Static Assets
@@ -31,6 +85,18 @@ app.use('/static', express.static(path.join(__dirname, 'public')));
 // Request Body Parsing
 app.use(express.json({ limit: '4mb' }));
 app.use(express.urlencoded({ extended: true, limit: '4mb' }));
+
+// Handle JSON parse errors gracefully as 400 Bad Request
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  if (err instanceof SyntaxError && 'body' in err) {
+    return res.status(400).json({
+      error: true,
+      message: 'Malformed request. Valid JSON payload required.',
+      details: {}
+    });
+  }
+  next(err);
+});
 
 // Template Context Injection
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -108,17 +174,31 @@ app.get('/feature/importance', async (req: Request, res: Response) => {
 app.post('/api/predict', async (req: Request, res: Response) => {
   let payload = req.body;
   if (!payload || typeof payload !== 'object') {
-    return res.status(400).json({ error: 'A JSON request body is required.', success: false });
+    return res.status(400).json({
+      error: true,
+      message: 'A JSON request body is required.',
+      details: {}
+    });
   }
 
   payload = normalizePayload(payload);
 
   try {
-    validatePredictionPayload(payload);
     const result = await predictionService.assessLoanRisk(payload);
     return res.json(result);
   } catch (err: any) {
-    return res.status(400).json({ error: err.message || 'Assessment failed', success: false });
+    const isValidationErr = err.statusCode === 422 || (err.message && (
+      err.message.includes('Missing') ||
+      err.message.includes('must be') ||
+      err.message.includes('Invalid') ||
+      err.message.includes('outside acceptable')
+    ));
+    const statusCode = err.statusCode || (isValidationErr ? 422 : 400);
+    return res.status(statusCode).json({
+      error: true,
+      message: err.message || 'Assessment failed',
+      details: err.details || {}
+    });
   }
 });
 
@@ -126,7 +206,11 @@ app.post('/api/predict', async (req: Request, res: Response) => {
 app.post('/api/simulate', (req: Request, res: Response) => {
   let payload = req.body;
   if (!payload || typeof payload !== 'object') {
-    return res.status(400).json({ error: 'A JSON request body is required.', success: false });
+    return res.status(400).json({
+      error: true,
+      message: 'A JSON request body is required.',
+      details: {}
+    });
   }
 
   payload = normalizePayload(payload);
@@ -135,7 +219,11 @@ app.post('/api/simulate', (req: Request, res: Response) => {
     const result = predictLoanRisk(payload);
     return res.json(result);
   } catch (err: any) {
-    return res.status(400).json({ error: err.message || 'Simulation failed', success: false });
+    return res.status(400).json({
+      error: true,
+      message: err.message || 'Simulation failed',
+      details: {}
+    });
   }
 });
 
@@ -155,7 +243,11 @@ app.get('/api/models/comparison', async (req: Request, res: Response) => {
 app.get('/api/models/:modelId', async (req: Request, res: Response) => {
   const model = await modelService.getModelById(req.params.modelId);
   if (!model) {
-    return res.status(404).json({ error: 'Model not found', success: false });
+    return res.status(404).json({
+      error: true,
+      message: `Model '${req.params.modelId}' not found. Supported: logistic-regression, knn, naive-bayes, decision-tree`,
+      details: { requested_id: req.params.modelId }
+    });
   }
   return res.json(model);
 });
@@ -170,11 +262,7 @@ app.get('/api/data/insights', async (req: Request, res: Response) => {
 app.get('/api/health', (req: Request, res: Response) => {
   return res.json({
     status: 'ok',
-    product: 'LoanLens',
-    service: 'Loan Default Prediction & Risk Intelligence',
-    version: '1.0.0',
-    models_configured: 4,
-    features: 16,
+    model: 'Logistic Regression'
   });
 });
 
@@ -182,15 +270,35 @@ app.get('/api/health', (req: Request, res: Response) => {
 
 app.use((req: Request, res: Response) => {
   if (req.path.startsWith('/api/')) {
-    return res.status(404).json({ error: 'Resource not found', success: false });
+    return res.status(404).json({
+      error: true,
+      message: 'Resource not found',
+      details: { path: req.path }
+    });
   }
   res.status(404).render('404');
 });
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  console.error('Server error:', err);
+  if (err instanceof SyntaxError || err.status === 400 || err.statusCode === 400) {
+    if (req.path.startsWith('/api/')) {
+      return res.status(400).json({
+        error: true,
+        message: 'Malformed request. Valid JSON payload required.',
+        details: {}
+      });
+    }
+    return res.status(400).send('Bad Request');
+  }
+
+  // Only log unexpected internal errors
+  console.error('Internal server error:', err);
   if (req.path.startsWith('/api/')) {
-    return res.status(500).json({ error: 'Internal server error', success: false });
+    return res.status(500).json({
+      error: true,
+      message: 'Internal server error occurred',
+      details: {}
+    });
   }
   res.status(500).render('404');
 });
