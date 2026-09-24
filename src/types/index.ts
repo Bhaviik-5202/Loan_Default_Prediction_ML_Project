@@ -81,7 +81,7 @@ export interface ModelSpecification {
   library: string;
   trainingDate: string;
   featureCount: number;
-  status: "PROD ACTIVE" | "Benchmark" | "Scratch Math";
+  status: string;
   isSelected: boolean;
   metrics: ModelMetrics;
   hyperparameters: Record<string, string | number | boolean>;

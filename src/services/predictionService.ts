@@ -72,7 +72,7 @@ export class PredictionService {
       risk_score: riskScore,
       probability,
       confidence,
-      model_used: data.model_used || "HistGradientBoosting (Tuned)",
+      model_used: data.model_used || "Calibrated Baseline Engine (Dev)",
       features_evaluated: data.features_evaluated || 24,
       factors: data.factors || [],
       profile: data.profile || {

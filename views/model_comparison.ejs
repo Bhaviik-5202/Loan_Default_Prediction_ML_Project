@@ -23,22 +23,22 @@
     <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px; margin-bottom:8px;">
       <div>
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-          <span class="badge low" style="font-size:11px;">SELECTED PRODUCTION MODEL</span>
-          <span style="font-size:13px; color:var(--muted);">Selected based on validation performance</span>
+          <span class="badge high" style="font-size:11px; background:rgba(16,185,129,0.15); color:#10b981;">PRODUCTION CANDIDATE &middot; PIPELINE VERIFIED</span>
+          <span style="font-size:13px; color:var(--muted);">Trained on 204,277 records &middot; Tested on 51,070 records</span>
         </div>
         <h2 style="font-size:20px; font-weight:700; margin:0; color:var(--text);">
-          Tuned Gradient Boosting (HistGradientBoostingClassifier)
+          Tuned HistGradientBoosting (HistGradientBoostingClassifier)
         </h2>
       </div>
       <div style="text-align:right;">
         <div style="font-size:24px; font-weight:700; color:var(--brand); line-height:1;">
-          0.763 <span style="font-size:14px; color:var(--muted); font-weight:500;">ROC-AUC</span>
+          0.7567 <span style="font-size:14px; color:var(--muted); font-weight:500;">Test ROC-AUC</span>
         </div>
-        <div style="font-size:12px; color:var(--muted); margin-top:2px;">CV: 0.760 &plusmn; 0.006</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:2px;">5-Fold CV: 0.7498 &plusmn; 0.0044</div>
       </div>
     </div>
     <p style="font-size:13px; color:var(--muted); line-height:1.6; margin:0;">
-      <strong>Why this model was chosen:</strong> Under an 11.6% default rate, a trivial majority-class classifier attains 88.4% raw accuracy with zero true-positive sensitivity. The Tuned Gradient Boosting model delivers the highest ROC-AUC (0.763), top precision (64.2%), and best F1-Score (0.262) on the test holdout, while executing inference in under 5 milliseconds.
+      <strong>Pipeline Selection Rationale:</strong> Under an 11.61% default base rate, trivial majority-class classifiers achieve 88.39% accuracy but fail to identify borrowers at risk. HistGradientBoostingClassifier achieved the highest ROC-AUC (0.7567) and highest 5-fold cross-validation AUC (0.7498), providing smooth, well-calibrated posterior default probabilities and superior credit tier discrimination.
     </p>
   </div>
 

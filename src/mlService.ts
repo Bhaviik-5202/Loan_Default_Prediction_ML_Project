@@ -182,7 +182,7 @@ export function predictLoanRisk(inputDict: Record<string, any>) {
     factors,
     profile,
     recommendation: { action, points },
-    model_used: "trained_model",
+    model_used: "HistGradientBoosting (Trained Pipeline)",
     features_evaluated: 24,
   };
 }
