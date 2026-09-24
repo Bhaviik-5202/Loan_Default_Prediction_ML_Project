@@ -1,0 +1,201 @@
+<%- include('partials/header', { title: 'Model Details & Inspection — LoanLens', crumb: '<b>Workspace</b> / Model Details', currentPath: '/model/details' }) %>
+
+<div style="max-width: 1080px; margin: 0 auto; padding-bottom: 60px;">
+
+  <div class="page-head" style="margin-bottom: 20px;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
+      <div>
+        <h1 style="font-size:26px; font-weight:700; margin:0 0 6px 0;">Model Specifications & Deep Inspection</h1>
+        <p style="color:var(--text-muted); margin:0; font-size:14px;">
+          Inspect hyperparameter configurations, test confusion matrices, and attribution drivers across trained models.
+        </p>
+      </div>
+      <span class="badge <%= currentModel.isSelected ? 'low' : 'med' %>" style="font-size:12px; padding:6px 14px;">
+        Status: <%= currentModel.status %>
+      </span>
+    </div>
+  </div>
+
+  <!-- Segmented Model Tabs -->
+  <div class="tab-segmented-bar">
+    <% allModels.forEach(function(m) { %>
+    <a href="/model/details?model=<%= m.id %>" class="tab-seg-btn <%= currentModel.id === m.id ? 'active' : '' %>">
+      <%= m.name %> <%= m.isSelected ? '★' : '' %>
+    </a>
+    <% }); %>
+  </div>
+
+  <!-- Model Overview Header Card -->
+  <div class="card" style="padding:28px; margin-bottom:28px;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:20px; padding-bottom:20px; border-bottom:1px solid var(--border); margin-bottom:24px;">
+      <div>
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+          <span style="font-size:12px; font-weight:700; color:var(--brand); text-transform:uppercase; letter-spacing:0.06em;">
+            <%= currentModel.family %>
+          </span>
+          <% if (currentModel.isSelected) { %>
+            <span class="badge low" style="font-size:10px;">PRODUCTION ACTIVE</span>
+          <% } %>
+        </div>
+        <h2 style="font-size:26px; font-weight:700; margin:0 0 8px; color:var(--text);">
+          <%= currentModel.name %>
+        </h2>
+        <p style="font-size:14px; color:var(--muted); margin:0; max-width:65ch; line-height:1.6;">
+          <%= currentModel.description %>
+        </p>
+      </div>
+
+      <div style="text-align:right;">
+        <div style="font-size:32px; font-weight:700; color:var(--brand); line-height:1;">
+          <%= currentModel.metrics.roc_auc.toFixed(3) %>
+        </div>
+        <div style="font-size:11px; font-weight:600; text-transform:uppercase; color:var(--muted); margin-top:4px;">
+          Test ROC-AUC Score
+        </div>
+      </div>
+    </div>
+
+    <!-- 6 Primary Performance Metric Cells -->
+    <div class="metrics-row-4" style="margin-bottom:0;">
+      <div style="padding:14px 16px; background:var(--surface); border-radius:10px; border:1px solid var(--border);">
+        <div style="font-size:11px; text-transform:uppercase; font-weight:700; color:var(--muted); margin-bottom:4px;">Accuracy</div>
+        <div style="font-size:20px; font-weight:700;"><%= (currentModel.metrics.accuracy * 100).toFixed(2) %>%</div>
+        <div style="font-size:11px; color:var(--muted);">Holdout test partition</div>
+      </div>
+
+      <div style="padding:14px 16px; background:var(--surface); border-radius:10px; border:1px solid var(--border);">
+        <div style="font-size:11px; text-transform:uppercase; font-weight:700; color:var(--muted); margin-bottom:4px;">Precision</div>
+        <div style="font-size:20px; font-weight:700; color:#3b82f6;"><%= (currentModel.metrics.precision * 100).toFixed(2) %>%</div>
+        <div style="font-size:11px; color:var(--muted);">Predicted defaults that defaulted</div>
+      </div>
+
+      <div style="padding:14px 16px; background:var(--surface); border-radius:10px; border:1px solid var(--border);">
+        <div style="font-size:11px; text-transform:uppercase; font-weight:700; color:var(--muted); margin-bottom:4px;">Recall (Sensitivity)</div>
+        <div style="font-size:20px; font-weight:700; color:#10b981;"><%= (currentModel.metrics.recall * 100).toFixed(2) %>%</div>
+        <div style="font-size:11px; color:var(--muted);">Actual defaulters captured</div>
+      </div>
+
+      <div style="padding:14px 16px; background:var(--surface); border-radius:10px; border:1px solid var(--border);">
+        <div style="font-size:11px; text-transform:uppercase; font-weight:700; color:var(--muted); margin-bottom:4px;">F1-Score</div>
+        <div style="font-size:20px; font-weight:700; color:var(--brand);"><%= currentModel.metrics.f1_score.toFixed(3) %></div>
+        <div style="font-size:11px; color:var(--muted);">Harmonic mean under imbalance</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Two-Column Grid: Hyperparameters & Confusion Matrix -->
+  <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap:20px; margin-bottom:28px;">
+    <!-- Hyperparameters Table -->
+    <div class="card" style="padding:24px;">
+      <h3 style="font-size:16px; font-weight:700; margin:0 0 6px;">Hyperparameter Configuration</h3>
+      <p style="font-size:12px; color:var(--muted); margin:0 0 16px;">Tuned parameters utilized during final fit.</p>
+
+      <div class="table-wrap">
+        <table class="dtable">
+          <thead>
+            <tr>
+              <th>Parameter</th>
+              <th>Configured Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% Object.entries(currentModel.hyperparameters).forEach(function([k, v]) { %>
+            <tr>
+              <td><code><%= k %></code></td>
+              <td><strong><%= String(v) %></strong></td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Confusion Matrix Card -->
+    <div class="card" style="padding:24px;">
+      <h3 style="font-size:16px; font-weight:700; margin:0 0 6px;">Holdout Confusion Matrix</h3>
+      <p style="font-size:12px; color:var(--muted); margin:0 0 16px;">Tested on 51,070 held-out loans.</p>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
+        <div style="padding:16px; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:10px; text-align:center;">
+          <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:#10b981;">True Negative (TN)</div>
+          <div style="font-size:22px; font-weight:700; margin:4px 0;"><%= currentModel.confusionMatrix.trueNegative.toLocaleString() %></div>
+          <div style="font-size:10px; color:var(--muted);">Correct Non-Default</div>
+        </div>
+
+        <div style="padding:16px; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.3); border-radius:10px; text-align:center;">
+          <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:#ef4444;">False Positive (FP)</div>
+          <div style="font-size:22px; font-weight:700; margin:4px 0;"><%= currentModel.confusionMatrix.falsePositive.toLocaleString() %></div>
+          <div style="font-size:10px; color:var(--muted);">Type I Error</div>
+        </div>
+
+        <div style="padding:16px; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.3); border-radius:10px; text-align:center;">
+          <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:#ef4444;">False Negative (FN)</div>
+          <div style="font-size:22px; font-weight:700; margin:4px 0;"><%= currentModel.confusionMatrix.falseNegative.toLocaleString() %></div>
+          <div style="font-size:10px; color:var(--muted);">Missed Default (Type II)</div>
+        </div>
+
+        <div style="padding:16px; background:rgba(49,135,125,0.08); border:1px solid rgba(49,135,125,0.3); border-radius:10px; text-align:center;">
+          <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--brand);">True Positive (TP)</div>
+          <div style="font-size:22px; font-weight:700; margin:4px 0;"><%= currentModel.confusionMatrix.truePositive.toLocaleString() %></div>
+          <div style="font-size:10px; color:var(--muted);">Correct Default Flagged</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feature Importance / Coefficient Analysis Section -->
+  <div class="card" style="padding:24px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:12px;">
+      <div>
+        <h3 style="font-size:16px; font-weight:700; margin:0 0 4px;">Feature Importance / Signal Weights</h3>
+        <p style="font-size:12px; color:var(--muted); margin:0;">
+          <%= currentModel.algorithm.includes('Linear') || currentModel.algorithm.includes('Gradient Descent') ? 'Parametric Log-Odds Regression Coefficients' : 'Permutation / Gini Gain Attribution Score' %>
+        </p>
+      </div>
+      <span style="font-size:12px; color:var(--muted);">Ranked from highest magnitude</span>
+    </div>
+
+    <div style="height:320px; position:relative;">
+      <canvas id="modelFeatsChart"></canvas>
+    </div>
+  </div>
+
+</div>
+
+<%- include('partials/footer', {
+  extraScripts: `
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const currentModel = ${JSON.stringify(currentModel)};
+  const feats = currentModel.featureImportance || [];
+
+  if (feats.length > 0) {
+    const labels = feats.map(f => f.feature);
+    const dataVals = feats.map(f => f.importance);
+
+    new Chart(document.getElementById('modelFeatsChart'), {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Attribution Score / Coefficient',
+          data: dataVals,
+          backgroundColor: dataVals.map(v => v >= 0 ? '#31877d' : '#0284c7'),
+          borderRadius: 4
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { title: { display: true, text: 'Relative Signal Weight' } }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+  }
+});
+</script>
+  `
+}) %>

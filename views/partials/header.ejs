@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title><%= typeof title !== 'undefined' ? title : 'LoanLens — Loan Default Prediction & Risk Intelligence' %></title>
+<meta name="description" content="Institutional Credit Risk Scoring Engine with interactive borrower risk assessment, ML benchmark analytics, and simulation.">
+<meta property="og:title" content="<%= typeof title !== 'undefined' ? title : 'LoanLens — Loan Default Prediction & Risk Intelligence' %>">
+<meta property="og:description" content="LoanLens provides a model-backed assessment of loan default risk. Review borrower information, compare model signals, and understand the factors influencing the prediction.">
+<link rel="stylesheet" href="/static/css/app.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  (function () {
+    var saved = localStorage.getItem('loanlens-theme') || localStorage.getItem('loanml-theme') || 'light';
+    document.documentElement.setAttribute('data-theme', saved);
+  })();
+</script>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<div class="shell">
+
+  <div class="sb-backdrop" id="sbBackdrop" hidden></div>
+
+  <aside class="sidebar" id="sidebar" aria-label="Primary">
+    <a class="sb-head" href="/overview">
+      <div class="sb-logo-icon" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M9 12c1.5 2 4.5 2 6 0"/>
+          <path d="M12 7v1"/>
+        </svg>
+      </div>
+      <div class="sb-brand-text">
+        <span class="sb-brand-name">LoanLens</span>
+        <span class="sb-brand-sub">RISK INTELLIGENCE</span>
+      </div>
+    </a>
+
+    <nav class="sb-nav">
+      <% for (const group of nav) { %>
+      <div class="sb-group">
+        <div class="sb-group-label"><%= group.group %></div>
+        <% for (const item of group.items) { %>
+        <a class="sb-item <%= currentPath === item.route || (item.route === '/overview' && currentPath === '/') || (item.route === '/assess' && currentPath === '/predict') ? 'active' : '' %>" href="<%= item.route %>" <% if (currentPath === item.route) { %>aria-current="page"<% } %>>
+          <%- icon(item.icon) %>
+          <span><%= item.label %></span>
+          <% if (currentPath === item.route || (item.route === '/overview' && currentPath === '/') || (item.route === '/assess' && currentPath === '/predict')) { %>
+            <span class="active-dot" aria-hidden="true"></span>
+          <% } %>
+          <% if (item.status === 'soon') { %><span class="soon">Soon</span><% } %>
+        </a>
+        <% } %>
+      </div>
+      <% } %>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="api-service-card">
+        <div class="api-service-head">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l2 8 4-16 2 8h6"/></svg>
+          <span>API Service</span>
+        </div>
+        <div class="api-service-status">
+          <span class="live-pulse-dot" aria-hidden="true"></span>
+          <span>Status: Ready</span>
+        </div>
+      </div>
+
+      <a href="/overview" class="reviewer-link">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span>Reviewer Workspace</span>
+      </a>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:var(--space-4)">
+        <button class="icon-btn sb-toggle" id="sbToggle" type="button" aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false"><%- icon('menu') %></button>
+        <div class="topbar-pill">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="20" x2="6" y2="11"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="15"/></svg>
+          <span>Student ML project / lending risk review</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn" id="themeBtn" type="button" aria-label="Toggle color theme"></button>
+        <a class="btn-primary" href="/assess" style="display:inline-flex;align-items:center;gap:6px;">
+          <span>Run assessment</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="page-body" id="main-content" tabindex="-1">

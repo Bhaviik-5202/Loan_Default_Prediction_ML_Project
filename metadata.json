@@ -1,0 +1,8 @@
+{
+  "name": "Loan Default Prediction",
+  "description": "Institutional Credit Risk Scoring Engine with interactive borrower risk assessment, ML benchmark analytics, and simulation.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
