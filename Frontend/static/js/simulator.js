@@ -18,12 +18,16 @@
     const data = {};
     ids.forEach((id) => { data[id] = document.getElementById(id).value; });
 
-    fetch("/api/predict", {
+    fetch("/api/simulate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     })
-      .then((r) => r.json())
+      .then(async (r) => {
+        const body = await r.json();
+        if (!r.ok) throw new Error(body.error || "Simulation failed.");
+        return body;
+      })
       .then((res) => {
         const circ = 326.7;
         const offset = circ * (1 - res.probability / 100);
@@ -44,6 +48,9 @@
           deltaEl.innerHTML = `${lastPct}% <span style="color:var(--${dir === 'up' ? 'high' : 'low'})">→ ${res.probability}% (${dir === 'up' ? '+' : '-'}${diff})</span>`;
         }
         lastPct = res.probability;
+      })
+      .catch((error) => {
+        document.getElementById("simDelta").textContent = error.message;
       });
   }
 

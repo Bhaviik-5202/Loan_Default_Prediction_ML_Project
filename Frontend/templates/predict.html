@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Predict Risk — LoanML{% endblock %}
+{% block title %}Predict Risk — LoanLens{% endblock %}
 {% block crumb %}<b>Predict Risk</b>{% endblock %}
 {% block content %}
 
@@ -19,6 +19,11 @@
         <h2 class="step-title">Applicant Information</h2>
         <p class="step-sub">Who is applying, and their household situation.</p>
         <div class="field-grid">
+          <div class="field">
+            <label for="Name">Applicant name</label>
+            <span class="hint">Optional - saved with the prediction history.</span>
+            <input type="text" id="Name" name="Name" maxlength="120" autocomplete="name">
+          </div>
           <div class="field">
             <label for="Age">Age</label>
             <span class="hint">In years, 18–100.</span>

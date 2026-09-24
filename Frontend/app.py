@@ -1,43 +1,106 @@
 """
-LoanML — Loan Default Prediction & Credit Risk Analytics Platform.
-
-Architecture notes (read this before adding a page):
-
-- constants.py is the single source of truth for the sidebar. Every nav
-  item lists a route and a status ("live" or "soon").
-- Routes marked "live" are wired to a real view function below.
-- Routes marked "soon" are auto-registered at startup (see the loop near
-  the bottom) to render templates/coming_soon.html — so nothing in the
-  sidebar ever 404s, and turning a placeholder into a real page later is
-  just: build the template, add a real view function, flip its status.
-- data/mock.py is a clearly-separated mock data layer for Dashboard and
-  Prediction History. Swap its functions for real queries when a
-  predictions store exists; every caller already expects the same shape.
-- /api/predict is a placeholder scoring formula, not the trained model —
-  see the comment on predict_api() for exactly what Week 9 replaces.
+Loan Default Prediction — Production Flask Application
+======================================================
+Institutional Credit Risk Scoring Engine with Real ML Joblib Inference.
 """
 
+import os
+import logging
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 
-from constants import NAV, find_nav_item
+from constants import NAV
 from icons import icon_svg
-from data.mock import get_applications, get_dashboard_stats, get_prediction_trend
+from data.store import initialize_store, record_prediction, get_predictions, get_dashboard_stats, get_prediction_trend
+from ml_service import predict_loan_risk, get_ml_metrics, EDUCATION_VALS, EMPLOYMENT_VALS, MARITAL_VALS, PURPOSE_VALS, YES_NO_VALS
 
+# ─── App Configuration ────────────────────────────────────────────────────────
 app = Flask(__name__)
-app.jinja_env.globals["icon"] = icon_svg
+app.config['MAX_CONTENT_LENGTH'] = 4 * 1024 * 1024  # 4 MB max
 
+# Production Logging Configuration
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+logger = logging.getLogger("loanml")
+
+app.jinja_env.globals["icon"] = icon_svg
+initialize_store()
+
+_REQUIRED_PREDICTION_FIELDS = {
+    "Age", "Income", "LoanAmount", "CreditScore", "MonthsEmployed", "NumCreditLines",
+    "InterestRate", "LoanTerm", "DTIRatio", "Education", "EmploymentType", "MaritalStatus",
+    "HasMortgage", "HasDependents", "LoanPurpose", "HasCoSigner",
+}
+
+
+def _normalize_payload(payload: dict) -> dict:
+    """Normalize payload keys to match _REQUIRED_PREDICTION_FIELDS (Title Case)."""
+    if not isinstance(payload, dict):
+        return payload
+
+    # Mapping of common lowercase/snake_case names to TitleCase keys
+    norm_map = {
+        "age": "Age", "income": "Income", "loanamount": "LoanAmount",
+        "creditscore": "CreditScore", "monthsemployed": "MonthsEmployed",
+        "numcreditlines": "NumCreditLines", "interestrate": "InterestRate",
+        "loanterm": "LoanTerm", "dtiratio": "DTIRatio", "education": "Education",
+        "employmenttype": "EmploymentType", "maritalstatus": "MaritalStatus",
+        "hasmortgage": "HasMortgage", "hasdependents": "HasDependents",
+        "loanpurpose": "LoanPurpose", "hascosigner": "HasCoSigner"
+    }
+
+    normalized = {}
+    for k, v in payload.items():
+        low_k = k.lower().replace("_", "")
+        if low_k in norm_map:
+            normalized[norm_map[low_k]] = v
+        else:
+            normalized[k] = v
+    return normalized
+
+
+def _validate_prediction_payload(payload):
+    """Reject incomplete or out-of-range form submissions before inference."""
+    missing = sorted(field for field in _REQUIRED_PREDICTION_FIELDS if field not in payload)
+    if missing:
+        raise ValueError(f"Missing required fields: {', '.join(missing)}")
+
+    # Numeric range validation
+    limits = {
+        "Age": (18, 100), "Income": (0, 10_000_000), "LoanAmount": (0, 10_000_000),
+        "CreditScore": (300, 850), "MonthsEmployed": (0, 600), "NumCreditLines": (0, 100),
+        "InterestRate": (0, 100), "LoanTerm": (1, 600), "DTIRatio": (0, 1),
+    }
+    for field, (minimum, maximum) in limits.items():
+        try:
+            value = float(payload[field])
+        except (TypeError, ValueError):
+            raise ValueError(f"{field} must be numeric.") from None
+        if not minimum <= value <= maximum:
+            raise ValueError(f"{field} must be between {minimum} and {maximum}.")
+
+    # Categorical value validation
+    categorical_limits = {
+        "Education": EDUCATION_VALS,
+        "EmploymentType": EMPLOYMENT_VALS,
+        "MaritalStatus": MARITAL_VALS,
+        "LoanPurpose": PURPOSE_VALS,
+        "HasMortgage": YES_NO_VALS,
+        "HasDependents": YES_NO_VALS,
+        "HasCoSigner": YES_NO_VALS,
+    }
+    for field, allowed in categorical_limits.items():
+        value = payload.get(field)
+        if value not in allowed:
+            raise ValueError(f"Invalid value '{value}' for field '{field}'. Allowed values: {', '.join(allowed)}")
 
 @app.context_processor
 def inject_nav():
     return {"nav": NAV}
 
-
-# ---------------------------------------------------------------- mock data (cached once)
-
-_APPLICATIONS = get_applications()
-
-
-# ---------------------------------------------------------------- live pages
+# ─── Page Routes ──────────────────────────────────────────────────────────────
 
 @app.route("/")
 def index():
@@ -46,9 +109,13 @@ def index():
 
 @app.route("/dashboard")
 def dashboard():
-    stats = get_dashboard_stats(_APPLICATIONS)
-    trend = get_prediction_trend(_APPLICATIONS)
-    recent = _APPLICATIONS[:8]
+    applications = get_predictions()
+    metrics = get_ml_metrics()
+    best_model = metrics.get("model_results", {}).get("Tuned Gradient Boosting (Best)", {})
+    accuracy = best_model.get("test_accuracy")
+    stats = get_dashboard_stats(applications, round(accuracy * 100, 1) if accuracy is not None else None)
+    trend = get_prediction_trend(applications)
+    recent = applications[:8]
     return render_template("dashboard.html", stats=stats, trend=trend, recent=recent)
 
 
@@ -64,105 +131,121 @@ def simulator_page():
 
 @app.route("/predictions")
 def history_page():
-    return render_template("history.html", apps=_APPLICATIONS)
+    return render_template("history.html", apps=get_predictions())
 
+
+@app.route("/model/analytics")
+def model_analytics_page():
+    metrics = get_ml_metrics()
+    return render_template("model_analytics.html", metrics=metrics)
+
+
+@app.route("/feature/importance")
+def feature_importance_page():
+    metrics = get_ml_metrics()
+    return render_template("feature_importance.html", metrics=metrics)
+
+
+@app.route("/dataset/explorer")
+def dataset_explorer_page():
+    metrics = get_ml_metrics()
+    return render_template("dataset_explorer.html", metrics=metrics)
+
+
+# ─── REST API Routes ──────────────────────────────────────────────────────────
 
 @app.route("/api/predict", methods=["POST"])
 def predict_api():
     """
-    Placeholder scoring formula — NOT the trained model.
-
-    Week 9 swap-in: load the saved LogisticRegression + StandardScaler
-    from Loan_Default_Prediction.ipynb here, one-hot encode the incoming
-    JSON the same way df_encoded was built, scale it, and return
-    model.predict_proba() in place of the `risk` formula below. The
-    response shape (probability, risk_level, risk_score, prediction,
-    factors, profile, recommendation) is what predict.js, simulator.js
-    already expect — no frontend changes needed.
+    Real ML Inference API — Loan Default Prediction.
+    Pipeline: Normalization → Validation → DataFrame → Encoding → Scaler → Model → JSON.
     """
-    d = request.get_json(force=True) or {}
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return jsonify({"error": "A JSON request body is required.", "success": False}), 400
 
-    credit_score = float(d.get("CreditScore", 650))
-    dti = float(d.get("DTIRatio", 0.35))
-    income = max(float(d.get("Income", 60000)), 1)
-    loan_amount = float(d.get("LoanAmount", 15000))
-    interest_rate = float(d.get("InterestRate", 12.5))
-    months_employed = float(d.get("MonthsEmployed", 24))
-    has_mortgage = d.get("HasMortgage", "No") == "Yes"
-    has_cosigner = d.get("HasCoSigner", "No") == "Yes"
+    # Normalize keys to ensure consistency (e.g., 'income' -> 'Income')
+    payload = _normalize_payload(payload)
 
-    loan_to_income = min(loan_amount / income, 2) / 2
+    logger.info(f"POST /api/predict request received: {list(payload.keys())}")
+    try:
+        _validate_prediction_payload(payload)
+        result = predict_loan_risk(payload)
 
-    risk = (
-        (1 - min(credit_score, 850) / 850) * 0.35
-        + dti * 0.30
-        + loan_to_income * 0.15
-        + min(interest_rate / 40, 1) * 0.10
-        + (1 - min(months_employed / 60, 1)) * 0.10
-    )
-    probability = round(min(max(risk, 0), 1) * 100, 1)
-    risk_score = round(100 - probability)
-    risk_level = "High" if probability >= 45 else "Medium" if probability >= 20 else "Low"
-    prediction = "Likely to Default" if probability >= 45 else "Likely to Repay"
+        # Save only actual model outputs. Simulation requests intentionally do not persist.
+        try:
+            record_prediction(payload, result)
+        except Exception as log_err:
+            logger.warning(f"Could not append to application log: {log_err}")
 
-    factors = [
-        {"label": "Debt-to-Income Ratio", "impact": round(dti * 100), "direction": "up" if dti > 0.35 else "down"},
-        {"label": "Credit Score", "impact": round((credit_score - 300) / 550 * 100), "direction": "down" if credit_score >= 650 else "up"},
-        {"label": "Employment Stability", "impact": round(min(months_employed / 60, 1) * 100), "direction": "down" if months_employed >= 24 else "up"},
-        {"label": "Loan-to-Income Ratio", "impact": round(loan_to_income * 100), "direction": "up" if loan_to_income > 0.4 else "down"},
-    ]
+        return jsonify(result)
+    except ValueError as e:
+        return jsonify({"error": str(e), "success": False}), 400
+    except Exception as e:
+        logger.exception("Prediction error")
+        return jsonify({"error": f"Prediction failed: {str(e)}", "success": False}), 500
 
-    profile = {
-        "Credit Health": round((credit_score - 300) / 550 * 100),
-        "Fin. Stability": round((1 - dti) * 100),
-        "Repay. History": round(60 + (15 if has_cosigner else 0) + (15 if has_mortgage else 0)),
-        "Employment": round(min(months_employed / 60, 1) * 100),
-        "Debt Burden": round((1 - loan_to_income) * 100),
-        "Loan Risk": round(max(0, 100 - interest_rate * 4)),
-    }
 
-    if risk_level == "High":
-        action, points = "Review Required", [
-            "Consider a lower loan amount relative to income",
-            "Request additional income documentation",
-            "Re-evaluate the applicant's debt-to-income ratio",
-        ]
-    elif risk_level == "Medium":
-        action, points = "Additional Review Suggested", [
-            "Verify employment tenure and income stability",
-            "Consider requiring a co-signer if not already present",
-        ]
-    else:
-        action, points = "Standard Approval Path", [
-            "Profile is consistent with low historical default rates",
-            "No additional documentation flagged by the model",
-        ]
+@app.route("/api/simulate", methods=["POST"])
+def simulate_api():
+    """Risk Simulator API — live pipeline."""
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return jsonify({"error": "A JSON request body is required.", "success": False}), 400
 
+    # Normalize keys to ensure consistency
+    payload = _normalize_payload(payload)
+
+    try:
+        result = predict_loan_risk(payload)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e), "success": False}), 400
+
+
+@app.route("/api/metrics/ml", methods=["GET"])
+def ml_metrics_api():
+    """Returns full model metrics JSON."""
+    return jsonify(get_ml_metrics())
+
+
+@app.route("/api/health", methods=["GET"])
+def health_api():
+    """Production health check endpoint."""
+    from ml_service import _MODEL, _SCALER, _FEATURE_COLUMNS
     return jsonify({
-        "probability": probability,
-        "risk_score": risk_score,
-        "risk_level": risk_level,
-        "prediction": prediction,
-        "factors": factors,
-        "profile": profile,
-        "recommendation": {"action": action, "points": points},
+        "status"       : "ok",
+        "model_loaded" : _MODEL is not None,
+        "model_name"   : type(_MODEL).__name__ if _MODEL else None,
+        "scaler_loaded": _SCALER is not None,
+        "features"     : len(_FEATURE_COLUMNS) if _FEATURE_COLUMNS else 0,
+        "version"      : "1.0.0"
     })
 
 
-# ---------------------------------------------------------------- auto-registered "Coming Soon" pages
+# ─── Error Handlers ───────────────────────────────────────────────────────────
 
-def _make_soon_view(item):
-    def view():
-        return render_template("coming_soon.html", item=item)
-    view.__name__ = f"soon_{item['key']}"
-    return view
+@app.errorhandler(404)
+def not_found(e):
+    if request.path.startswith('/api/'):
+        return jsonify({"error": "Resource not found", "success": False}), 404
+    return render_template("404.html"), 404
 
 
-for group in NAV:
-    for nav_item in group["items"]:
-        if nav_item["status"] == "soon":
-            app.add_url_rule(nav_item["route"], view_func=_make_soon_view(nav_item))
+@app.errorhandler(500)
+def server_error(e):
+    logger.exception("Server error")
+    if request.path.startswith('/api/'):
+        return jsonify({"error": "Internal server error", "success": False}), 500
+    # For non-API requests, we could return a custom 500.html, but sticking to JSON for API
+    return jsonify({"error": "Internal server error", "success": False}), 500
 
+
+# ─── Entry Point ──────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port       = int(os.environ.get("PORT", 5000))
+    host       = os.environ.get("HOST", "127.0.0.1")
+    debug_mode = os.environ.get("FLASK_DEBUG", "0") == "1"
+    logger.info(f"Starting Flask server on http://{host}:{port}")
+    app.run(host=host, port=port, debug=debug_mode, use_reloader=False)

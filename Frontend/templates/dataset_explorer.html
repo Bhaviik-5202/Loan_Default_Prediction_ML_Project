@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}Dataset Explorer & EDA — LoanLens{% endblock %}
+{% block crumb %}<b>Data</b> / Dataset Explorer (Weeks 1–2){% endblock %}
+
+{% block content %}
+{% set dataset = metrics.get('dataset_summary', {}) if metrics else {} %}
+<div class="page-head" style="margin-bottom: 24px;">
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
+    <div>
+      <h1 style="font-size:24px; font-weight:700; margin:0 0 6px 0;">Dataset Explorer & Preprocessing (EDA)</h1>
+      <p style="color:var(--text-muted); margin:0; font-size:14px;">
+        Exploratory Data Analysis and cleaning summary for <code>Loan_Default.csv</code>.
+      </p>
+    </div>
+    <div>
+      <span class="badge" style="background:rgba(79,70,229,0.15); color:#4f46e5; border:1px solid rgba(79,70,229,0.3); font-weight:600; padding:6px 14px; border-radius:20px;">
+        Kaggle Banking Dataset
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- Dataset Overview Cards -->
+<div class="grid-4" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:24px;">
+  <div class="card" style="padding:18px; border-radius:12px; background:var(--card-bg); border:1px solid var(--border);">
+    <div style="font-size:12px; text-transform:uppercase; color:var(--text-muted); font-weight:600;">Total Records</div>
+    <div style="font-size:26px; font-weight:700; color:#4f46e5; margin:6px 0 2px 0;">{{ '{:,}'.format(dataset.get('total_records', 0)) }}</div>
+    <div style="font-size:12px; color:var(--text-muted);">Borrower Loan Applications</div>
+  </div>
+  <div class="card" style="padding:18px; border-radius:12px; background:var(--card-bg); border:1px solid var(--border);">
+    <div style="font-size:12px; text-transform:uppercase; color:var(--text-muted); font-weight:600;">Clean Features</div>
+    <div style="font-size:26px; font-weight:700; color:#10b981; margin:6px 0 2px 0;">{{ dataset.get('clean_features', 0) }} Features</div>
+    <div style="font-size:12px; color:var(--text-muted);">LoanID dropped as ID key</div>
+  </div>
+  <div class="card" style="padding:18px; border-radius:12px; background:var(--card-bg); border:1px solid var(--border);">
+    <div style="font-size:12px; text-transform:uppercase; color:var(--text-muted); font-weight:600;">Default Rate</div>
+    <div style="font-size:26px; font-weight:700; color:#ef4444; margin:6px 0 2px 0;">{{ dataset.get('default_percentage', 0) }}%</div>
+    <div style="font-size:12px; color:var(--text-muted);">{{ '{:,}'.format(dataset.get('default_count', 0)) }} positive cases</div>
+  </div>
+  <div class="card" style="padding:18px; border-radius:12px; background:var(--card-bg); border:1px solid var(--border);">
+    <div style="font-size:12px; text-transform:uppercase; color:var(--text-muted); font-weight:600;">Missing & Duplicates</div>
+    <div style="font-size:26px; font-weight:700; color:#06b6d4; margin:6px 0 2px 0;">0</div>
+    <div style="font-size:12px; color:var(--text-muted);">100% Complete & Verified</div>
+  </div>
+</div>
+
+<!-- Attribute Dictionary Card -->
+<div class="card" style="padding:22px; border-radius:12px; background:var(--card-bg); border:1px solid var(--border); margin-bottom:24px;">
+  <h2 style="font-size:18px; font-weight:600; margin:0 0 16px 0;">Feature Schema & Preprocessing Summary (Week 1 & 2)</h2>
+  <div style="overflow-x:auto;">
+    <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
+      <thead>
+        <tr style="border-bottom:1px solid var(--border); color:var(--text-muted); background:var(--surface);">
+          <th style="padding:10px 14px;">Feature Name</th>
+          <th style="padding:10px 14px;">Data Type</th>
+          <th style="padding:10px 14px;">Type Classification</th>
+          <th style="padding:10px 14px;">Transformation / Encoding</th>
+          <th style="padding:10px 14px;">Domain Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:10px 14px;"><code>Age</code></td>
+          <td style="padding:10px 14px;">Integer</td>
+          <td style="padding:10px 14px;">Numerical Continuous</td>
+          <td style="padding:10px 14px;">StandardScaler ($\mu=0, \sigma=1$)</td>
+          <td style="padding:10px 14px;">Borrower age (18 to 69 years)</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:10px 14px;"><code>Income</code></td>
+          <td style="padding:10px 14px;">Integer</td>
+          <td style="padding:10px 14px;">Numerical Continuous</td>
+          <td style="padding:10px 14px;">StandardScaler</td>
+          <td style="padding:10px 14px;">Annual verified applicant income ($15,000 to $149,999)</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:10px 14px;"><code>LoanAmount</code></td>
+          <td style="padding:10px 14px;">Integer</td>
+          <td style="padding:10px 14px;">Numerical Continuous</td>
+          <td style="padding:10px 14px;">StandardScaler</td>
+          <td style="padding:10px 14px;">Requested loan principal amount ($5,000 to $250,000)</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:10px 14px;"><code>CreditScore</code></td>
+          <td style="padding:10px 14px;">Integer</td>
+          <td style="padding:10px 14px;">Numerical Discrete</td>
+          <td style="padding:10px 14px;">StandardScaler</td>
+          <td style="padding:10px 14px;">FICO-style bureau credit rating (300 to 849)</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:10px 14px;"><code>MonthsEmployed</code></td>
+          <td style="padding:10px 14px;">Integer</td>
+          <td style="padding:10px 14px;">Numerical Continuous</td>
+          <td style="padding:10px 14px;">StandardScaler</td>
+          <td style="padding:10px 14px;">Employment tenure at current position (0 to 119 months)</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:10px 14px;"><code>DTIRatio</code></td>
+          <td style="padding:10px 14px;">Float</td>
+          <td style="padding:10px 14px;">Numerical Ratio</td>
+          <td style="padding:10px 14px;">StandardScaler</td>
+          <td style="padding:10px 14px;">Total monthly debt obligations divided by monthly income (0.10 to 0.90)</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:10px 14px;"><code>InterestRate</code></td>
+          <td style="padding:10px 14px;">Float</td>
+          <td style="padding:10px 14px;">Numerical Continuous</td>
+          <td style="padding:10px 14px;">StandardScaler</td>
+          <td style="padding:10px 14px;">Annualized percentage interest rate (2.0% to 25.0%)</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:10px 14px;"><code>Education</code></td>
+          <td style="padding:10px 14px;">Object</td>
+          <td style="padding:10px 14px;">Categorical Nominal</td>
+          <td style="padding:10px 14px;">One-Hot Encoded (drop_first=True)</td>
+          <td style="padding:10px 14px;">High School, Bachelor's, Master's, PhD</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:10px 14px;"><code>EmploymentType</code></td>
+          <td style="padding:10px 14px;">Object</td>
+          <td style="padding:10px 14px;">Categorical Nominal</td>
+          <td style="padding:10px 14px;">One-Hot Encoded (drop_first=True)</td>
+          <td style="padding:10px 14px;">Full-time, Part-time, Self-employed, Unemployed</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:10px 14px;"><code>HasCoSigner</code></td>
+          <td style="padding:10px 14px;">Object</td>
+          <td style="padding:10px 14px;">Categorical Binary</td>
+          <td style="padding:10px 14px;">One-Hot Encoded (Yes/No)</td>
+          <td style="padding:10px 14px;">Whether secondary guarantor is attached to loan</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border); background:rgba(239,68,68,0.06);">
+          <td style="padding:10px 14px;"><b><code>Default</code></b></td>
+          <td style="padding:10px 14px;">Integer</td>
+          <td style="padding:10px 14px;">Target Variable</td>
+          <td style="padding:10px 14px;">Binary Ground Truth (0 / 1)</td>
+          <td style="padding:10px 14px;">0 = Paid / Non-Default, 1 = Defaulted Loan</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

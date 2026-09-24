@@ -1,5 +1,6 @@
 function donutChart(el, segments, size = 160, thickness = 22) {
-  const total = segments.reduce((s, x) => s + x.value, 0) || 1;
+  const total = segments.reduce((s, x) => s + x.value, 0);
+  const divisor = total || 1;
   const r = (size - thickness) / 2;
   const cx = size / 2, cy = size / 2;
   const circ = 2 * Math.PI * r;
@@ -7,7 +8,7 @@ function donutChart(el, segments, size = 160, thickness = 22) {
   let svg = `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
     <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--border)" stroke-width="${thickness}"/>`;
   segments.forEach((seg) => {
-    const frac = seg.value / total;
+    const frac = seg.value / divisor;
     const len = circ * frac;
     svg += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${seg.color}" stroke-width="${thickness}"
       stroke-dasharray="${len} ${circ - len}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})"

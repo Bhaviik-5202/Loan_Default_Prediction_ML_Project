@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Prediction History — LoanML{% endblock %}
+{% block title %}Prediction History — LoanLens{% endblock %}
 {% block crumb %}<b>Prediction History</b>{% endblock %}
 {% block content %}
 
@@ -28,6 +28,7 @@
     </select>
   </div>
 
+  {% if apps %}
   <div class="table-wrap">
     <table class="dtable">
       <thead><tr><th>ID</th><th>Applicant</th><th>Credit Score</th><th>Loan Amount</th><th>DTI</th><th>Risk Level</th><th>Probability</th><th>Prediction</th><th>Date</th></tr></thead>
@@ -36,10 +37,17 @@
   </div>
 
   <div class="pagination" id="pagination"></div>
+  {% else %}
+  <div class="empty-state">
+    No predictions yet. Completed risk assessments will appear here.
+  </div>
+  {% endif %}
 </div>
 
 {% endblock %}
 {% block scripts %}
+{% if apps %}
 <script>window.APPLICATIONS = {{ apps|tojson }};</script>
 <script src="{{ url_for('static', filename='js/history.js') }}"></script>
+{% endif %}
 {% endblock %}

@@ -59,6 +59,7 @@ venv.bak/
 *.pth
 *.pt
 *.onnx
+Frontend/data/predictions.db
 
 # IDE / Editor config
 .vscode/
