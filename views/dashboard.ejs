@@ -1,0 +1,208 @@
+<%- include('partials/header', { title: 'LoanLens — Loan Default Prediction & Risk Intelligence', crumb: '<b>Workspace</b> / Overview', currentPath: '/overview' }) %>
+
+<!-- Overview Hero matching Screenshot (831).png -->
+<div class="overview-hero-card">
+  <div>
+    <div class="overview-badge">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15 8 22 9 17 14 18 21 12 17 6 21 7 14 2 9 9 8 12 2"/></svg>
+      <span>Review Workspace</span>
+    </div>
+
+    <h1 class="overview-headline">
+      See the risk<br>
+      <span class="overview-headline-accent">behind the score.</span>
+    </h1>
+
+    <p class="overview-subtext">
+      LoanLens provides a model-backed assessment of loan default risk. Review borrower information, compare model signals, and understand the factors influencing the prediction.
+    </p>
+
+    <div class="overview-actions">
+      <a href="/assess" class="btn-primary" style="display:inline-flex;align-items:center;gap:8px;padding:12px 22px;">
+        <span>Start an Assessment</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+      <a href="/model/comparison" class="btn-ghost" style="display:inline-flex;align-items:center;gap:8px;padding:12px 20px;">
+        <span>Explore the Models</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16"/><circle cx="12" cy="8" r="0.6"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <!-- Signal Map Graphic (matches screenshot) -->
+  <div class="signal-map-card">
+    <div class="signal-map-header">
+      <span>Signal Map</span>
+      <span>V1.0</span>
+    </div>
+
+    <div class="signal-map-sub">
+      <span class="dot"></span>
+      <span>transparent by design</span>
+    </div>
+
+    <div class="signal-graphic-area">
+      <!-- Decorative background arches -->
+      <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:0.35;" viewBox="0 0 300 150">
+        <circle cx="80" cy="150" r="100" fill="none" stroke="#d4c9b8" stroke-width="28" stroke-dasharray="140 30"/>
+        <circle cx="280" cy="60" r="80" fill="none" stroke="var(--color-surface-raised)" stroke-width="22" opacity="0.4"/>
+      </svg>
+
+      <!-- Vertical signal bars matching screenshot -->
+      <div class="signal-bar inactive" style="height:55px;"></div>
+      <div class="signal-bar inactive" style="height:80px;"></div>
+      <div class="signal-bar inactive" style="height:65px;"></div>
+      <div class="signal-bar inactive" style="height:90px;"></div>
+      <div class="signal-bar inactive" style="height:72px;"></div>
+      <div class="signal-bar active" style="height:120px;"></div>
+      <div class="signal-bar active" style="height:140px;"></div>
+      <div class="signal-bar active" style="height:125px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Summary Metrics Cards (matches screenshot) -->
+<div class="metrics-row-4">
+  <div class="metric-summary-card">
+    <div class="metric-icon-box" style="background:rgba(49,135,125,0.12); color:var(--color-surface-raised);">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>
+    </div>
+    <div class="metric-val">255,347</div>
+    <div class="metric-lbl">Training Records</div>
+    <div class="metric-sub">curated loan applications</div>
+  </div>
+
+  <div class="metric-summary-card">
+    <div class="metric-icon-box" style="background:rgba(217,119,6,0.12); color:#d97706;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.9 2.9l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.6V21a2 2 0 11-4 0v-.2a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.9-2.9l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.6-1H3a2 2 0 110-4h.2a1.7 1.7 0 001.6-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.9-2.9l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.6V3a2 2 0 114 0v.2a1.7 1.7 0 001 1.6 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.9 2.9l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.6 1H21a2 2 0 110 4h-.2a1.7 1.7 0 00-1.6 1z"/></svg>
+    </div>
+    <div class="metric-val">16</div>
+    <div class="metric-lbl">Input Features</div>
+    <div class="metric-sub">borrower & credit attributes</div>
+  </div>
+
+  <div class="metric-summary-card">
+    <div class="metric-icon-box" style="background:rgba(16,185,129,0.12); color:#10b981;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    </div>
+    <div class="metric-val">4</div>
+    <div class="metric-lbl">Models Evaluated</div>
+    <div class="metric-sub">5-fold stratified cross-validation</div>
+  </div>
+
+  <div class="metric-summary-card">
+    <div class="metric-icon-box" style="background:rgba(79,70,229,0.12); color:#4f46e5;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </div>
+    <div class="metric-val" style="display:flex; align-items:center; gap:6px;">Logistic Regression <span class="badge" style="font-size:10px; font-weight:700; background:rgba(16,185,129,0.15); color:#10b981; padding:2px 6px; border-radius:4px;">Pipeline Verified</span></div>
+    <div class="metric-lbl">Selected Best Model</div>
+    <div class="metric-sub">ROC-AUC 0.7532 &middot; 5-Fold CV 0.7426 &plusmn; 0.0063</div>
+  </div>
+</div>
+
+<!-- Workflow Steps -->
+<div class="card" style="padding:28px; margin-bottom:28px;">
+  <h2 style="font-size:18px; font-weight:700; margin:0 0 6px;">Evaluation Workflow</h2>
+  <p style="font-size:13px; color:var(--color-text-tertiary); margin:0 0 20px;">
+    How borrower profiles are transformed into calibrated default predictions:
+  </p>
+
+  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:20px;">
+    <div style="padding:16px; background:var(--surface); border-radius:12px; border:1px solid var(--border);">
+      <div style="font-size:11px; font-weight:700; color:var(--color-surface-raised); text-transform:uppercase; margin-bottom:4px;">01. Profile Capture</div>
+      <div style="font-size:15px; font-weight:600; margin-bottom:6px;">16 Verified Signals</div>
+      <p style="font-size:12px; color:var(--color-text-tertiary); margin:0; line-height:1.5;">
+        Borrower financials, DTI ratio, employment tenure, and loan parameters collected and validated against lending bounds.
+      </p>
+    </div>
+
+    <div style="padding:16px; background:var(--surface); border-radius:12px; border:1px solid var(--border);">
+      <div style="font-size:11px; font-weight:700; color:var(--color-surface-raised); text-transform:uppercase; margin-bottom:4px;">02. Preprocessing & Scaling</div>
+      <div style="font-size:15px; font-weight:600; margin-bottom:6px;">24 Encoded Features</div>
+      <p style="font-size:12px; color:var(--color-text-tertiary); margin:0; line-height:1.5;">
+        StandardScaler z-score normalization and one-hot dummy encoding matching the training distribution.
+      </p>
+    </div>
+
+    <div style="padding:16px; background:var(--surface); border-radius:12px; border:1px solid var(--border);">
+      <div style="font-size:11px; font-weight:700; color:var(--color-surface-raised); text-transform:uppercase; margin-bottom:4px;">03. Calibrated Risk Output</div>
+      <div style="font-size:15px; font-weight:600; margin-bottom:6px;">Transparent Factor Attribution</div>
+      <p style="font-size:12px; color:var(--color-text-tertiary); margin:0; line-height:1.5;">
+        Calibrated probability estimation, institutional risk score, and factor breakdown with recommendations.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Portfolio Overview Charts -->
+<div class="grid-2">
+  <div class="chart-card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <h3 style="margin:0;">Assessment Trend</h3>
+      <span style="font-size:12px; color:var(--color-text-tertiary);">Last 14 Days</span>
+    </div>
+    <p class="sub">Applications scored per day across the evaluation workspace.</p>
+    <div id="trendChart"></div>
+  </div>
+
+  <div class="chart-card">
+    <h3>Portfolio Risk Distribution</h3>
+    <p class="sub">Share of evaluated applications by risk tier.</p>
+    <div style="display:flex;justify-content:center"><div id="riskDonut"></div></div>
+    <div class="legend">
+      <div class="li"><span class="sw" style="background:var(--color-status-success)"></span>Low Risk (<%= stats.low_risk %>)</div>
+      <div class="li"><span class="sw" style="background:var(--color-status-warning)"></span>Moderate Risk (<%= stats.medium_risk %>)</div>
+      <div class="li"><span class="sw" style="background:var(--color-status-danger)"></span>High Risk (<%= stats.high_risk %>)</div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Predictions Table -->
+<div class="chart-card">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    <div>
+      <h3 style="margin-bottom:2px">Recent Assessments</h3>
+      <p class="sub" style="margin:0">Most recently scored borrower applications.</p>
+    </div>
+    <a class="btn-ghost" href="/predictions">View Full History</a>
+  </div>
+  <div class="table-wrap">
+    <table class="dtable">
+      <thead><tr><th>Applicant ID</th><th>Borrower Name</th><th>Credit Score</th><th>Loan Amount</th><th>DTI</th><th>Risk Level</th><th>Probability</th><th>Status</th><th>Date</th></tr></thead>
+      <tbody>
+        <% if (!recent || recent.length === 0) { %>
+        <tr><td colspan="9"><div class="empty-state">No assessments recorded yet. Run your first assessment above to start tracking portfolio risk.</div></td></tr>
+        <% } %>
+        <% if (recent && recent.length > 0) { %>
+          <% for (const a of recent) { %>
+          <tr>
+            <td><code><%= a.id %></code></td>
+            <td><%= a.name %></td>
+            <td><%= a.credit_score %></td>
+            <td>$<%= a.loan_amount.toLocaleString() %></td>
+            <td><%= a.dti %></td>
+            <td><span class="badge <%= a.risk_level === 'Low' ? 'low' : a.risk_level === 'Medium' ? 'med' : 'high' %>"><%= a.risk_level %></span></td>
+            <td><%= a.probability %>%</td>
+            <td><%= a.prediction %></td>
+            <td><%= a.date %></td>
+          </tr>
+          <% } %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('partials/footer', {
+  extraScripts: `
+    <script src="/static/js/charts.js"></script>
+    <script>
+      donutChart(document.getElementById('riskDonut'), [
+        {value: ${stats.low_risk}, color: 'var(--color-status-success)'},
+        {value: ${stats.medium_risk}, color: 'var(--color-status-warning)'},
+        {value: ${stats.high_risk}, color: 'var(--color-status-danger)'},
+      ]);
+      lineChart(document.getElementById('trendChart'), ${JSON.stringify(trend)});
+    </script>
+  `
+}) %>

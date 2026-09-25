@@ -1,0 +1,52 @@
+<%# Reusable ModelCard component %>
+<div class="model-card-item <%= model.isSelected ? 'is-selected' : '' %>" id="model-card-<%= model.id %>">
+  <div class="model-card-head">
+    <div>
+      <h3 class="model-card-title"><%= model.name %></h3>
+      <span class="model-card-algo"><%= model.family %> &middot; <%= model.library %></span>
+    </div>
+    <span class="badge <%= model.isSelected ? 'low' : 'med' %>" style="font-size:11px;">
+      <%= model.status %>
+    </span>
+  </div>
+
+  <p style="font-size:13px; color:var(--color-text-tertiary); line-height:1.5; margin:0 0 14px; min-height:40px;">
+    <%= model.description %>
+  </p>
+
+  <div class="model-metrics-grid">
+    <div class="model-metric-cell">
+      <span class="val"><%= (model.metrics.roc_auc).toFixed(3) %></span>
+      <span class="lbl">ROC-AUC</span>
+    </div>
+    <div class="model-metric-cell">
+      <span class="val"><%= (model.metrics.f1_score).toFixed(3) %></span>
+      <span class="lbl">F1 Score</span>
+    </div>
+    <div class="model-metric-cell">
+      <span class="val"><%= (model.metrics.accuracy * 100).toFixed(1) %>%</span>
+      <span class="lbl">Accuracy</span>
+    </div>
+    <div class="model-metric-cell">
+      <span class="val"><%= (model.metrics.precision * 100).toFixed(1) %>%</span>
+      <span class="lbl">Precision</span>
+    </div>
+    <div class="model-metric-cell">
+      <span class="val"><%= (model.metrics.recall * 100).toFixed(1) %>%</span>
+      <span class="lbl">Recall</span>
+    </div>
+    <div class="model-metric-cell">
+      <span class="val"><%= model.metrics.cv_roc_auc_mean.toFixed(3) %></span>
+      <span class="lbl">5-Fold CV</span>
+    </div>
+  </div>
+
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-top:auto; padding-top:12px; border-top:1px solid var(--border);">
+    <span style="font-size:12px; color:var(--color-text-tertiary);">
+      Training Time: <b><%= model.metrics.training_time || 'N/A' %></b>
+    </span>
+    <a href="/model/details?model=<%= model.id %>" class="btn-ghost" style="padding:6px 12px; font-size:12px; min-height:32px;">
+      Inspect Model &rarr;
+    </a>
+  </div>
+</div>

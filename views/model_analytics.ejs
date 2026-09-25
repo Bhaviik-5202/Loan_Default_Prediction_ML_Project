@@ -1,0 +1,245 @@
+<%- include('partials/header', { title: 'Model Performance & Analytics — LoanLens', crumb: '<b>Model & AI</b> / Model Analytics & Comparison (Weeks 4–6)', currentPath: '/model/analytics' }) %>
+
+<div class="page-head" style="margin-bottom: 24px;">
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
+    <div>
+      <h1 style="font-size:24px; font-weight:700; margin:0 0 6px 0;">Model Analytics & Benchmark Comparison</h1>
+      <p style="color:var(--text-muted); margin:0; font-size:14px;">
+        Evaluation from the saved experiment metrics, including cross-validation and held-out test performance.
+      </p>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <span class="badge" style="background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3); font-weight:600; padding:6px 14px; border-radius:20px;">
+        Active: Logistic Regression (Tuned)
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Stat Cards -->
+<div class="grid-4" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:24px;">
+  <div class="card" style="padding:18px; border-radius:12px; background:var(--card-bg); border:1px solid var(--border);">
+    <div style="font-size:12px; text-transform:uppercase; color:var(--text-muted); font-weight:600; letter-spacing:0.5px;">Best Test ROC-AUC</div>
+    <div style="font-size:26px; font-weight:700; color:#31877d; margin:6px 0 2px 0;">
+      <%= (metrics && metrics.model_results && metrics.model_results['Logistic Regression']) ? metrics.model_results['Logistic Regression'].roc_auc : '0.7532' %>
+    </div>
+    <div style="font-size:12px; color:var(--text-muted);">Logistic Regression</div>
+  </div>
+  <div class="card" style="padding:18px; border-radius:12px; background:var(--card-bg); border:1px solid var(--border);">
+    <div style="font-size:12px; text-transform:uppercase; color:var(--text-muted); font-weight:600; letter-spacing:0.5px;">Best Recall (Sensitivity)</div>
+    <div style="font-size:26px; font-weight:700; color:#10b981; margin:6px 0 2px 0;">
+      <%= (metrics && metrics.model_results && metrics.model_results['Logistic Regression']) ? (metrics.model_results['Logistic Regression'].recall * 100).toFixed(1) + '%' : 'N/A' %>
+    </div>
+    <div style="font-size:12px; color:var(--text-muted);">Defaulters Captured (Balanced)</div>
+  </div>
+  <div class="card" style="padding:18px; border-radius:12px; background:var(--card-bg); border:1px solid var(--border);">
+    <div style="font-size:12px; text-transform:uppercase; color:var(--text-muted); font-weight:600; letter-spacing:0.5px;">Scratch GD Accuracy</div>
+    <div style="font-size:26px; font-weight:700; color:#06b6d4; margin:6px 0 2px 0;">
+      <%= (metrics && metrics.model_results && metrics.model_results['Scratch Gradient Descent']) ? (metrics.model_results['Scratch Gradient Descent'].test_accuracy * 100).toFixed(1) + '%' : 'N/A' %>
+    </div>
+    <div style="font-size:12px; color:var(--text-muted);">Custom Math Implementation</div>
+  </div>
+  <div class="card" style="padding:18px; border-radius:12px; background:var(--card-bg); border:1px solid var(--border);">
+    <div style="font-size:12px; text-transform:uppercase; color:var(--text-muted); font-weight:600; letter-spacing:0.5px;">Evaluated Features</div>
+    <div style="font-size:26px; font-weight:700; color:#8b5cf6; margin:6px 0 2px 0;">24 Columns</div>
+    <div style="font-size:12px; color:var(--text-muted);">9 Numerical + 15 One-Hot Dummies</div>
+  </div>
+</div>
+
+<!-- Comparison Table Card -->
+<div class="card" style="padding:22px; border-radius:12px; background:var(--card-bg); border:1px solid var(--border); margin-bottom:24px;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+    <h2 style="font-size:18px; font-weight:600; margin:0;">Model Benchmark Comparison Matrix (Week 5)</h2>
+    <span style="font-size:12px; color:var(--text-muted);">5-Fold Stratified CV | 80/20 Test Holdout</span>
+  </div>
+  <div style="overflow-x:auto;">
+    <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
+      <thead>
+        <tr style="border-bottom:1px solid var(--border); color:var(--text-muted); background:var(--surface);">
+          <th style="padding:10px 14px;">Algorithm</th>
+          <th style="padding:10px 14px;">Implementation</th>
+          <th style="padding:10px 14px;">Accuracy</th>
+          <th style="padding:10px 14px;">Precision</th>
+          <th style="padding:10px 14px;">Recall</th>
+          <th style="padding:10px 14px;">F1-Score</th>
+          <th style="padding:10px 14px;">ROC-AUC</th>
+          <th style="padding:10px 14px;">CV AUC (Mean ± Std)</th>
+          <th style="padding:10px 14px;">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (metrics && metrics.model_results) { %>
+          <% for (const [name, res] of Object.entries(metrics.model_results)) { %>
+          <tr style="border-bottom:1px solid var(--border); <%= name.includes('Tuned') ? 'background:rgba(79,70,229,0.06); font-weight:600;' : '' %>">
+            <td style="padding:12px 14px;">
+              <b><%= name %></b>
+            </td>
+            <td style="padding:12px 14px;">
+              <% if (name.includes('Scratch')) { %>
+                <span style="background:#0284c7; color:#fff; font-size:10px; padding:2px 6px; border-radius:4px;">Pure NumPy</span>
+              <% } else { %>
+                <span style="background:#4b5563; color:#fff; font-size:10px; padding:2px 6px; border-radius:4px;">Scikit-Learn</span>
+              <% } %>
+            </td>
+            <td style="padding:12px 14px;"><%= (res.test_accuracy * 100).toFixed(2) %>%</td>
+            <td style="padding:12px 14px;"><%= (res.precision * 100).toFixed(2) %>%</td>
+            <td style="padding:12px 14px;"><%= (res.recall * 100).toFixed(2) %>%</td>
+            <td style="padding:12px 14px;"><%= res.f1_score %></td>
+            <td style="padding:12px 14px;"><span style="color:#4f46e5; font-weight:700;"><%= res.roc_auc %></span></td>
+            <td style="padding:12px 14px;"><%= res.cv_roc_auc_mean %> ± <%= res.cv_roc_auc_std %></td>
+            <td style="padding:12px 14px;">
+              <% if (name.includes('Tuned')) { %>
+                <span style="color:#10b981; font-weight:700;">PROD ACTIVE</span>
+              <% } else { %>
+                <span style="color:var(--text-muted);">Benchmark</span>
+              <% } %>
+            </td>
+          </tr>
+          <% } %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Visualizations Grid -->
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap:20px; margin-bottom:24px;">
+  <!-- ROC Curves -->
+  <div class="card" style="padding:22px; border-radius:12px; background:var(--card-bg); border:1px solid var(--border);">
+    <h3 style="font-size:16px; font-weight:600; margin:0 0 14px 0;">Receiver Operating Characteristic (ROC Curves)</h3>
+    <div style="height:300px; position:relative;">
+      <canvas id="rocChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Loss Curve (Scratch Algorithm) -->
+  <div class="card" style="padding:22px; border-radius:12px; background:var(--card-bg); border:1px solid var(--border);">
+    <h3 style="font-size:16px; font-weight:600; margin:0 0 14px 0;">Gradient Descent Loss Convergence (From Scratch)</h3>
+    <div style="height:300px; position:relative;">
+      <canvas id="lossChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Feature Importances Section -->
+<div class="card" style="padding:22px; border-radius:12px; background:var(--card-bg); border:1px solid var(--border); margin-bottom:24px;">
+  <h3 style="font-size:16px; font-weight:600; margin:0 0 14px 0;">Feature Importance & Credit Risk Drivers (Week 6)</h3>
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap:20px;">
+    <div style="height:320px; position:relative;">
+      <canvas id="featuresChart"></canvas>
+    </div>
+    <div style="font-size:13px; color:var(--text-muted); line-height:1.6; display:flex; flex-direction:column; justify-content:center;">
+      <h4 style="color:var(--text); margin:0 0 8px 0;">Key Risk Driver Insights</h4>
+      <p style="margin:0">The ranking is generated from the saved training metrics. Use it to review model behavior, not as a credit decision rule by itself.</p>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer', {
+  extraScripts: `
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const metrics = ${JSON.stringify(metrics)};
+  
+  // 1. ROC Curves Chart
+  if (metrics.roc_curves) {
+    const rocDatasets = [];
+    const colors = {'Logistic Regression': '#31877d', 'KNN': '#0284c7', 'Naive Bayes': '#d97706', 'Decision Tree': '#dc2626', 'Scratch Logistic Regression': '#6b7280'};
+    
+    for (let modelName in metrics.roc_curves) {
+      const data = metrics.roc_curves[modelName];
+      const pts = data.fpr.map((fpr, i) => ({x: fpr, y: data.tpr[i]}));
+      rocDatasets.push({
+        label: \`\${modelName} (AUC = \${data.auc})\`,
+        data: pts,
+        borderColor: colors[modelName] || '#8b5cf6',
+        borderWidth: 2.5,
+        fill: false,
+        pointRadius: 0
+      });
+    }
+    
+    // Diagonal chance line
+    rocDatasets.push({
+      label: 'Random Chance (AUC = 0.50)',
+      data: [{x:0, y:0}, {x:1, y:1}],
+      borderColor: '#6b7280',
+      borderDash: [5, 5],
+      borderWidth: 1.5,
+      pointRadius: 0
+    });
+
+    new Chart(document.getElementById('rocChart'), {
+      type: 'scatter',
+      data: { datasets: rocDatasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { title: { display: true, text: 'False Positive Rate (1 - Specificity)' }, min: 0, max: 1 },
+          y: { title: { display: true, text: 'True Positive Rate (Recall)' }, min: 0, max: 1 }
+        },
+        plugins: { legend: { position: 'bottom' } }
+      }
+    });
+  }
+
+  // 2. Scratch Loss Convergence Chart
+  if (metrics.dataset_summary && metrics.dataset_summary.scratch_loss_history) {
+    const lossData = metrics.dataset_summary.scratch_loss_history;
+    const labels = lossData.map((_, i) => i * 10);
+    new Chart(document.getElementById('lossChart'), {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Binary Cross-Entropy Loss J(w)',
+          data: lossData,
+          borderColor: '#06b6d4',
+          backgroundColor: 'rgba(6,182,212,0.1)',
+          fill: true,
+          tension: 0.3,
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { title: { display: true, text: 'Epoch Iteration' } },
+          y: { title: { display: true, text: 'Loss' } }
+        },
+        plugins: { legend: { position: 'bottom' } }
+      }
+    });
+  }
+
+  // 3. Feature Importances Chart
+  if (metrics.feature_importances) {
+    const topFeats = metrics.feature_importances.slice(0, 10).reverse();
+    new Chart(document.getElementById('featuresChart'), {
+      type: 'bar',
+      data: {
+        labels: topFeats.map(f => f.feature),
+        datasets: [{
+          label: 'Feature Importance Score',
+          data: topFeats.map(f => f.importance),
+          backgroundColor: '#4f46e5',
+          borderRadius: 4
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { title: { display: true, text: 'Relative Importance' } }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+  }
+});
+</script>
+  `
+}) %>
